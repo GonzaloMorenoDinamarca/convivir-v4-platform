@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONVIVIR v4.0 - Dashboard Principal</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .panel-title {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+            transform: scale(1.05);
+        }
+        
+        .btn-info {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #3182ce;
+            transform: scale(1.05);
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #dd6b20;
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .alert-item {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .alert-item.alta {
+            border-left-color: #f56565;
+            background: #fff5f5;
+        }
+        
+        .alert-item.media {
+            border-left-color: #ed8936;
+            background: #fffaf0;
+        }
+        
+        .alert-item.baja {
+            border-left-color: #ecc94b;
+            background: #fffff0;
+        }
+        
+        .curso-selector {
+            margin-bottom: 20px;
+        }
+        
+        .curso-selector select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+            font-size: 1em;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        #graficoEvolucion, #graficoRedSocial {
+            min-height: 500px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 CONVIVIR v4.0</h1>
+            <p class="subtitle">Dashboard Principal - Desarrollado por Gonzalo Moreno</p>
+            <span class="version-badge">Datos Precargados - Listo para Usar</span>
+        </header>
+        
+        <!-- Estadísticas Generales -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalEstudiantes">-</div>
+                <div class="stat-label">Estudiantes</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🎓</div>
+                <div class="stat-value" id="totalCursos">-</div>
+                <div class="stat-label">Cursos</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="climaPromedio">-</div>
+                <div class="stat-label">Clima Escolar</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🚨</div>
+                <div class="stat-value" id="alertasPendientes">-</div>
+                <div class="stat-label">Alertas Pendientes</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🔗</div>
+                <div class="stat-value" id="totalInteracciones">-</div>
+                <div class="stat-label">Interacciones</div>
+            </div>
+        </div>
+        
+        <!-- Análisis Predictivo -->
+        <div class="panel">
+            <h2 class="panel-title">🤖 Análisis Predictivo LSTM</h2>
+            <div class="curso-selector">
+                <label for="cursoSelect">Seleccionar Curso:</label>
+                <select id="cursoSelect" onchange="cargarAnalisisCurso()">
+                    <option value="">Cargando cursos...</option>
+                </select>
+            </div>
+            <div id="graficoEvolucion"></div>
+            <div id="resultadoPrediccion" style="margin-top: 20px;"></div>
+        </div>
+        
+        <!-- Alertas Recientes -->
+        <div class="panel">
+            <h2 class="panel-title">🚨 Alertas Recientes</h2>
+            <div id="listaAlertas">
+                <div class="loading">Cargando alertas...</div>
+            </div>
+        </div>
+        
+        <!-- Red Social -->
+        <div class="panel">
+            <h2 class="panel-title">🕸️ Análisis de Red Social</h2>
+            <button class="btn btn-primary" onclick="cargarRedSocial()">Generar Análisis de Red</button>
+            <div id="graficoRedSocial"></div>
+            <div id="resultadoRedSocial" style="margin-top: 20px;"></div>
+        </div>
+        
+        <!-- Simulador de Intervenciones -->
+        <div class="panel">
+            <h2 class="panel-title">🎯 Simulador de Intervenciones</h2>
+            <div class="curso-selector">
+                <label for="cursoSimulador">Curso:</label>
+                <select id="cursoSimulador">
+                    <option value="">Seleccione un curso</option>
+                </select>
+            </div>
+            <div style="margin: 20px 0;">
+                <label for="tipoIntervencion">Tipo de Intervención:</label>
+                <select id="tipoIntervencion" style="padding: 10px; border-radius: 5px; border: 2px solid #667eea; margin-left: 10px;">
+                    <option value="Taller de Convivencia">Taller de Convivencia</option>
+                    <option value="Mediación de Conflictos">Mediación de Conflictos</option>
+                    <option value="Actividad de Integración">Actividad de Integración</option>
+                    <option value="Charla de Empatía">Charla de Empatía</option>
+                </select>
+            </div>
+            <button class="btn btn-success" onclick="simularIntervencion()">Simular Impacto</button>
+            <div id="resultadoSimulacion" style="margin-top: 20px;"></div>
+        </div>
+        
+        <!-- Botones de Acción -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="window.location.href='/configurar_cursos'" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">⚙️ Configurar Cursos</button>
+            <button class="btn btn-success" onclick="window.location.href='/ingresar_datos'" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">📝 Ingresar Datos Semanales</button>
+            <button class="btn btn-info" onclick="ejecutarAnalisisNLP()">💬 Análisis de Sentimientos (NLP)</button>
+            <button class="btn btn-warning" onclick="generarReporte()">📄 Generar Reporte Completo</button>
+        </div>
+    </div>
+    
+    <script>
+        // Cargar estadísticas generales
+        async function cargarEstadisticas() {
+            try {
+                const response = await fetch('/api/estadisticas_generales');
+                const data = await response.json();
+                
+                if (data.exito) {
+                    document.getElementById('totalEstudiantes').textContent = data.total_estudiantes;
+                    document.getElementById('totalCursos').textContent = data.total_cursos;
+                    document.getElementById('climaPromedio').textContent = data.clima_promedio.toFixed(1);
+                    document.getElementById('alertasPendientes').textContent = data.alertas_pendientes;
+                    document.getElementById('totalInteracciones').textContent = data.total_interacciones;
+                }
+            } catch (error) {
+                console.error('Error al cargar estadísticas:', error);
+            }
+        }
+        
+        // Cargar lista de cursos
+        async function cargarCursos() {
+            try {
+                const response = await fetch('/api/lista_cursos');
+                const data = await response.json();
+                
+                if (data.exito && data.cursos.length > 0) {
+                    const select1 = document.getElementById('cursoSelect');
+                    const select2 = document.getElementById('cursoSimulador');
+                    
+                    select1.innerHTML = '<option value="">Seleccione un curso</option>';
+                    select2.innerHTML = '<option value="">Seleccione un curso</option>';
+                    
+                    data.cursos.forEach(curso => {
+                        const option1 = document.createElement('option');
+                        option1.value = curso.curso_id;
+                        option1.textContent = `${curso.nivel} ${curso.letra} (ID: ${curso.curso_id})`;
+                        select1.appendChild(option1);
+                        
+                        const option2 = option1.cloneNode(true);
+                        select2.appendChild(option2);
+                    });
+                    
+                    // Seleccionar el primer curso automáticamente
+                    select1.selectedIndex = 1;
+                    cargarAnalisisCurso();
+                }
+            } catch (error) {
+                console.error('Error al cargar cursos:', error);
+            }
+        }
+        
+        // Cargar análisis de curso
+        async function cargarAnalisisCurso() {
+            const cursoId = document.getElementById('cursoSelect').value;
+            if (!cursoId) return;
+            
+            try {
+                // Cargar gráfico de evolución
+                const response = await fetch(`/api/grafico_evolucion/${cursoId}`);
+                const graficoData = await response.json();
+                Plotly.newPlot('graficoEvolucion', graficoData.data, graficoData.layout);
+                
+                // Cargar predicción
+                const predResponse = await fetch(`/api/analisis_predictivo/${cursoId}`);
+                const predData = await predResponse.json();
+                
+                if (predData.exito) {
+                    const resultadoDiv = document.getElementById('resultadoPrediccion');
+                    resultadoDiv.innerHTML = `
+                        <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; border-left: 4px solid #4299e1;">
+                            <h3 style="color: #2c5282; margin-bottom: 10px;">📈 Predicción para las próximas 4 semanas</h3>
+                            <p><strong>Predicciones:</strong> ${predData.predicciones.predicciones.map(p => p.toFixed(2)).join(', ')}</p>
+                            <p><strong>Tendencia:</strong> ${predData.predicciones.tendencia}</p>
+                            <p style="margin-top: 10px; color: #2d3748;">${predData.mensaje}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al cargar análisis:', error);
+            }
+        }
+        
+        // Cargar alertas
+        async function cargarAlertas() {
+            try {
+                const response = await fetch('/api/alertas');
+                const data = await response.json();
+                
+                const listaDiv = document.getElementById('listaAlertas');
+                
+                if (data.exito && data.alertas.length > 0) {
+                    listaDiv.innerHTML = data.alertas.slice(0, 10).map(alerta => `
+                        <div class="alert-item ${alerta.nivel_severidad.toLowerCase()}">
+                            <strong>${alerta.tipo}</strong> - ${alerta.descripcion}
+                            <br>
+                            <small>Curso: ${alerta.curso_id || 'N/A'} | Severidad: ${alerta.nivel_severidad} | ${alerta.fecha_creacion}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    listaDiv.innerHTML = '<p style="text-align: center; color: #48bb78;">✅ No hay alertas pendientes</p>';
+                }
+            } catch (error) {
+                console.error('Error al cargar alertas:', error);
+            }
+        }
+        
+        // Cargar red social
+        async function cargarRedSocial() {
+            try {
+                document.getElementById('graficoRedSocial').innerHTML = '<div class="loading">Generando análisis de red social...</div>';
+                
+                const response = await fetch('/api/grafico_red_social');
+                const graficoData = await response.json();
+                
+                if (graficoData.error) {
+                    document.getElementById('graficoRedSocial').innerHTML = `<p style="color: red;">${graficoData.error}</p>`;
+                } else {
+                    Plotly.newPlot('graficoRedSocial', graficoData.data, graficoData.layout);
+                    
+                    // Cargar análisis
+                    const analisisResponse = await fetch('/api/analisis_red_social');
+                    const analisisData = await analisisResponse.json();
+                    
+                    if (analisisData.exito) {
+                        document.getElementById('resultadoRedSocial').innerHTML = `
+                            <div style="background: #f0fff4; padding: 20px; border-radius: 10px; border-left: 4px solid #48bb78;">
+                                <h3 style="color: #22543d; margin-bottom: 10px;">📊 Resultados del Análisis</h3>
+                                <p><strong>Total de nodos:</strong> ${analisisData.metricas.total_nodos}</p>
+                                <p><strong>Total de conexiones:</strong> ${analisisData.metricas.total_conexiones}</p>
+                                <p><strong>Densidad de red:</strong> ${(analisisData.metricas.densidad * 100).toFixed(1)}%</p>
+                                <p><strong>Estudiantes aislados:</strong> ${analisisData.estudiantes_aislados.length}</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar red social:', error);
+                document.getElementById('graficoRedSocial').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Simular intervención
+        async function simularIntervencion() {
+            const cursoId = document.getElementById('cursoSimulador').value;
+            const tipoIntervencion = document.getElementById('tipoIntervencion').value;
+            
+            if (!cursoId) {
+                alert('Por favor seleccione un curso');
+                return;
+            }
+            
+            try {
+                document.getElementById('resultadoSimulacion').innerHTML = '<div class="loading">Simulando intervención...</div>';
+                
+                const response = await fetch('/api/simular_intervencion', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        curso_id: cursoId,
+                        tipo_intervencion: tipoIntervencion,
+                        impacto_esperado: 0.15
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.exito) {
+                    document.getElementById('resultadoSimulacion').innerHTML = `
+                        <div style="background: #fffaf0; padding: 20px; border-radius: 10px; border-left: 4px solid #ed8936;">
+                            <h3 style="color: #7c2d12; margin-bottom: 10px;">🎯 Resultado de la Simulación</h3>
+                            <p><strong>Intervención:</strong> ${data.tipo_intervencion}</p>
+                            <p><strong>Mejora promedio esperada:</strong> +${data.mejora_promedio.toFixed(2)} puntos</p>
+                            <p><strong>Sin intervención:</strong> ${data.prediccion_sin_intervencion.join(', ')}</p>
+                            <p><strong>Con intervención:</strong> ${data.prediccion_con_intervencion.join(', ')}</p>
+                            <p style="margin-top: 10px; color: #2d3748;">La intervención podría mejorar el clima escolar en un promedio de ${(data.mejora_promedio / 10 * 100).toFixed(1)}%</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al simular:', error);
+                document.getElementById('resultadoSimulacion').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Ejecutar análisis NLP
+        async function ejecutarAnalisisNLP() {
+            try {
+                alert('Ejecutando análisis de sentimientos... Esto puede tomar unos segundos.');
+                const response = await fetch('/api/analisis_sentimientos');
+                const data = await response.json();
+                
+                if (data.exito) {
+                    alert(`Análisis completado:\n\nSentimiento general: ${data.sentimiento_general}\nPolaridad promedio: ${data.polaridad_promedio.toFixed(2)}\nComentarios analizados: ${data.total_comentarios}`);
+                } else {
+                    alert(`Error: ${data.mensaje}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Generar reporte
+        function generarReporte() {
+            alert('Funcionalidad de generación de reportes en desarrollo. Por ahora puedes exportar los gráficos individualmente.');
+        }
+        
+        // Inicializar al cargar la página
+        window.onload = function() {
+            cargarEstadisticas();
+            cargarCursos();
+            cargarAlertas();
+        };
+    </script>
+</body>
+</html>
+

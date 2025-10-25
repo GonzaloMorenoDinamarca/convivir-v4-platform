@@ -1,0 +1,20 @@
+{
+  "train_rmse": 1.210854527361359,
+  "train_mae": 1.0404807594025303,
+  "train_mae_ci_lower": 0.9413035359532679,
+  "train_mae_ci_upper": 1.131405363258958,
+  "train_mape": 13.0066727751525,
+  "train_r2": 0.208676587196986,
+  "train_bias": -0.10073535413998745,
+  "train_n_samples": 144,
+  "test_rmse": 1.3947530547251075,
+  "test_mae": 1.2701148914297418,
+  "test_mae_ci_lower": 1.0774854522026658,
+  "test_mae_ci_upper": 1.4438915828083536,
+  "test_mape": 20.28620185053998,
+  "test_r2": -6.132409537516435,
+  "test_bias": 1.2077030864192375,
+  "test_n_samples": 36,
+  "epochs_trained": 150,
+  "target_col": "clima_escolar_promedio"
+}

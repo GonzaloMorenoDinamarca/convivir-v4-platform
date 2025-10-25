@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresar Datos Semanales - CONVIVIR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .progress-section {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .form-content {
+            padding: 40px;
+        }
+        
+        .form-section {
+            margin-bottom: 40px;
+        }
+        
+        .form-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-group label .tooltip {
+            margin-left: 8px;
+            cursor: help;
+            color: #667eea;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        .form-group input[type="number"]::-webkit-inner-spin-button,
+        .form-group input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .range-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .range-input-group input[type="range"] {
+            flex: 1;
+        }
+        
+        .range-value {
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+        
+        .help-text {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Ingreso de Datos Semanales</h1>
+            <p>Sistema de Recolección Continua para Predicción Científica</p>
+        </div>
+        
+        <div class="progress-section">
+            <div class="progress-info">
+                <div>
+                    <strong>Progreso hacia Predicción Científica</strong>
+                    <div class="help-text">Semanas registradas: <span id="semanas-actuales">0</span> / 52 (mínimo requerido)</div>
+                </div>
+                <div>
+                    <strong id="confiabilidad-label">Confiabilidad: BAJA</strong>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar" style="width: 0%;">
+                    <span id="progress-text">0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-content">
+            <div class="alert alert-info">
+                <strong>ℹ️ Importante:</strong> Complete este formulario <strong>cada semana</strong> para construir la capacidad predictiva del sistema. Después de 52 semanas, el modelo alcanzará <strong>confiabilidad científica ALTA</strong>.
+            </div>
+            
+            <form id="form-datos-semanales" method="POST" action="/api/ingresar_datos_semanales">
+                <!-- Sección 1: Información Básica -->
+                <div class="form-section">
+                    <h2>1. Información Básica</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="fecha">Fecha de Registro *</label>
+                            <input type="date" id="fecha" name="fecha" required>
+                            <div class="help-text">Fecha de la semana que está registrando</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="curso">Curso *</label>
+                            <select id="curso" name="curso" required>
+                                <option value="">Seleccione un curso</option>
+                            </select>
+                            <div class="help-text">Si no ve su curso, <a href="/configurar_cursos" style="color: #667eea; font-weight: bold;">configúrelo aquí</a></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="periodo">Período *</label>
+                            <input type="text" id="periodo" name="periodo" placeholder="Ej: Semana 15" required>
+                            <div class="help-text">Número de semana del año escolar</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección 2: Indicadores de Clima Escolar (Escala 1-10) -->
+                <div class="form-section">
+                    <h2>2. Indicadores de Clima Escolar</h2>
+                    <div class="help-text" style="margin-bottom: 20px;">Evalúe cada indicador en una escala de 1 (Muy Bajo) a 10 (Muy Alto)</div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="clima_escolar">
+                                Clima Escolar General *
+                                <span class="tooltip" title="Percepción general del ambiente en el curso">ℹ️</span>
+                            </label>
+                            <div class="range-input-group">
+                                <input type="range" id="clima_escolar" name="clima_escolar" min="1" max="10" value="5" oninput="updateRangeValue(this, 'clima_escolar_value')">
+                                <span class="range-value" id="clima_escolar_value">5</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apoyo_docentes">
+                                Apoyo de Docentes *
+                                <span class="tooltip" title="Nivel de apoyo percibido por estudiantes">ℹ️</span>
+                            </label>
+                            <div class="range-input-group">
+                                <input type="range" id="apoyo_docentes" name="apoyo_docentes" min="1" max="10" value="5" oninput="updateRangeValue(this, 'apoyo_docentes_value')">
+                                <span class="range-value" id="apoyo_docentes_value">5</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="participacion">
+                                Participación Estudiantes *
+                                <span class="tooltip" title="Nivel de participación activa en clases">ℹ️</span>
+                            </label>
+                            <div class="range-input-group">
+                                <input type="range" id="participacion" name="participacion" min="1" max="10" value="5" oninput="updateRangeValue(this, 'participacion_value')">
+                                <span class="range-value" id="participacion_value">5</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="empatia">
+                                Nivel de Empatía *
+                                <span class="tooltip" title="Capacidad de ponerse en el lugar del otro">ℹ️</span>
+                            </label>
+                            <div class="range-input-group">
+                                <input type="range" id="empatia" name="empatia" min="1" max="10" value="5" oninput="updateRangeValue(this, 'empatia_value')">
+                                <span class="range-value" id="empatia_value">5</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="autoestima">
+                                Nivel de Autoestima *
+                                <span class="tooltip" title="Autoestima promedio del curso">ℹ️</span>
+                            </label>
+                            <div class="range-input-group">
+                                <input type="range" id="autoestima" name="autoestima" min="1" max="10" value="5" oninput="updateRangeValue(this, 'autoestima_value')">
+                                <span class="range-value" id="autoestima_value">5</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="resolucion_conflictos">
+                                Resolución de Conflictos *
+                                <span class="tooltip" title="Capacidad para resolver conflictos pacíficamente">ℹ️</span>
+                            </label>
+                            <div class="range-input-group">
+                                <input type="range" id="resolucion_conflictos" name="resolucion_conflictos" min="1" max="10" value="5" oninput="updateRangeValue(this, 'resolucion_conflictos_value')">
+                                <span class="range-value" id="resolucion_conflictos_value">5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección 3: Incidentes Reportados -->
+                <div class="form-section">
+                    <h2>3. Incidentes Reportados</h2>
+                    <div class="help-text" style="margin-bottom: 20px;">Número de incidentes ocurridos durante la semana</div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="incidentes_bullying">Incidentes de Bullying *</label>
+                            <input type="number" id="incidentes_bullying" name="incidentes_bullying" min="0" value="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="incidentes_violencia">Incidentes de Violencia Física *</label>
+                            <input type="number" id="incidentes_violencia" name="incidentes_violencia" min="0" value="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="incidentes_discriminacion">Incidentes de Discriminación *</label>
+                            <input type="number" id="incidentes_discriminacion" name="incidentes_discriminacion" min="0" value="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reportes_anonimos">Reportes Anónimos *</label>
+                            <input type="number" id="reportes_anonimos" name="reportes_anonimos" min="0" value="0" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección 4: Datos Académicos -->
+                <div class="form-section">
+                    <h2>4. Datos Académicos</h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="asistencia">Asistencia Promedio (%) *</label>
+                            <input type="number" id="asistencia" name="asistencia" min="0" max="100" step="0.1" value="85" required>
+                            <div class="help-text">Porcentaje de asistencia del curso</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="promedio_notas">Promedio de Notas *</label>
+                            <input type="number" id="promedio_notas" name="promedio_notas" min="1" max="7" step="0.1" value="5.0" required>
+                            <div class="help-text">Promedio de notas del curso (escala 1-7)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección 5: Eventos e Intervenciones (Opcional) -->
+                <div class="form-section">
+                    <h2>5. Eventos e Intervenciones (Opcional)</h2>
+                    
+                    <div class="form-group">
+                        <label for="eventos">¿Ocurrió algún evento significativo esta semana?</label>
+                        <select id="eventos" name="tipo_evento">
+                            <option value="">Ninguno</option>
+                            <option value="intervencion">Intervención Aplicada</option>
+                            <option value="crisis">Crisis o Conflicto Mayor</option>
+                            <option value="evaluacion">Período de Evaluaciones</option>
+                            <option value="vacaciones">Vacaciones/Feriado</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="descripcion_evento">Descripción del Evento</label>
+                        <textarea id="descripcion_evento" name="descripcion_evento" rows="3" placeholder="Describa brevemente el evento o intervención"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Botones -->
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">💾 Guardar Datos Semanales</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Actualizar valor de range inputs
+        function updateRangeValue(input, valueId) {
+            document.getElementById(valueId).textContent = input.value;
+        }
+        
+        // Cargar progreso al iniciar
+        window.addEventListener('DOMContentLoaded', async function() {
+            // Cargar cursos disponibles
+            try {
+                const responseCursos = await fetch('/api/cursos_disponibles');
+                const dataCursos = await responseCursos.json();
+                
+                if (dataCursos.exito && dataCursos.cursos.length > 0) {
+                    const selectCurso = document.getElementById('curso');
+                    dataCursos.cursos.forEach(curso => {
+                        const option = document.createElement('option');
+                        option.value = curso;
+                        option.textContent = curso;
+                        selectCurso.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar cursos:', error);
+            }
+            
+            // Cargar progreso
+            try {
+                const response = await fetch('/api/progreso_datos');
+                const data = await response.json();
+                
+                const semanasActuales = data.semanas_registradas || 0;
+                const porcentaje = Math.min((semanasActuales / 52) * 100, 100);
+                
+                document.getElementById('semanas-actuales').textContent = semanasActuales;
+                document.getElementById('progress-bar').style.width = porcentaje + '%';
+                document.getElementById('progress-text').textContent = Math.round(porcentaje) + '%';
+                
+                // Actualizar confiabilidad
+                let confiabilidad = 'BAJA';
+                if (semanasActuales >= 52) {
+                    confiabilidad = 'ALTA';
+                } else if (semanasActuales >= 26) {
+                    confiabilidad = 'MEDIA';
+                }
+                document.getElementById('confiabilidad-label').textContent = 'Confiabilidad: ' + confiabilidad;
+            } catch (error) {
+                console.error('Error al cargar progreso:', error);
+            }
+        });
+        
+        // Manejar envío del formulario
+        document.getElementById('form-datos-semanales').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/ingresar_datos_semanales', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.exito) {
+                    alert('✅ Datos guardados exitosamente!\n\nSemanas registradas: ' + result.semanas_totales + '/52');
+                    window.location.reload();
+                } else {
+                    alert('❌ Error: ' + result.mensaje);
+                }
+            } catch (error) {
+                alert('❌ Error al guardar datos: ' + error.message);
+            }
+        });
+        
+        // Establecer fecha de hoy por defecto
+        document.getElementById('fecha').valueAsDate = new Date();
+    </script>
+</body>
+</html>
+

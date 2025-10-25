@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Cursos - CONVIVIR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .curso-item {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .curso-info {
+            flex: 1;
+        }
+        
+        .curso-nombre {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+        
+        .curso-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Configuración de Cursos</h1>
+            <p>Gestione los cursos de su establecimiento</p>
+        </div>
+        
+        <div class="content">
+            <div class="alert alert-info">
+                <strong>ℹ️ Importante:</strong> Configure todos los cursos de su establecimiento para poder ingresar datos semanales de cada uno de forma independiente.
+            </div>
+            
+            <!-- Formulario para agregar curso -->
+            <div class="section">
+                <h2>➕ Agregar Nuevo Curso</h2>
+                <form id="form-agregar-curso">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nombre_curso">Nombre del Curso *</label>
+                            <input type="text" id="nombre_curso" name="nombre_curso" placeholder="Ej: 1°A, 2°B, 3° Medio A" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="total_estudiantes">N° Estudiantes *</label>
+                            <input type="number" id="total_estudiantes" name="total_estudiantes" min="1" max="50" value="30" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Agregar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Lista de cursos -->
+            <div class="section">
+                <h2>📚 Cursos Configurados</h2>
+                <div id="lista-cursos">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No hay cursos configurados aún</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botones de navegación -->
+            <div class="btn-container">
+                <button class="btn btn-secondary" onclick="window.location.href='/'">Volver al Dashboard</button>
+                <button class="btn btn-primary" onclick="window.location.href='/ingresar_datos'">Ingresar Datos Semanales</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Cargar cursos al iniciar
+        window.addEventListener('DOMContentLoaded', cargarCursos);
+        
+        async function cargarCursos() {
+            try {
+                const response = await fetch('/api/listar_cursos');
+                const data = await response.json();
+                
+                const listaCursos = document.getElementById('lista-cursos');
+                
+                if (data.exito && data.cursos.length > 0) {
+                    listaCursos.innerHTML = data.cursos.map(curso => `
+                        <div class="curso-item">
+                            <div class="curso-info">
+                                <div class="curso-nombre">${curso.nombre}</div>
+                                <div class="curso-meta">
+                                    ${curso.total_estudiantes} estudiantes • 
+                                    ${curso.semanas_registradas || 0} semanas registradas
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" onclick="eliminarCurso('${curso.id}', '${curso.nombre}')">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    listaCursos.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>No hay cursos configurados aún</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al cargar cursos:', error);
+            }
+        }
+        
+        // Agregar curso
+        document.getElementById('form-agregar-curso').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/agregar_curso', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.exito) {
+                    alert('✅ Curso agregado exitosamente!');
+                    this.reset();
+                    cargarCursos();
+                } else {
+                    alert('❌ Error: ' + result.mensaje);
+                }
+            } catch (error) {
+                alert('❌ Error al agregar curso: ' + error.message);
+            }
+        });
+        
+        // Eliminar curso
+        async function eliminarCurso(cursoId, nombreCurso) {
+            if (!confirm(`¿Está seguro de eliminar el curso "${nombreCurso}"?\n\nEsto eliminará todos los datos asociados.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/eliminar_curso', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ curso_id: cursoId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.exito) {
+                    alert('✅ Curso eliminado exitosamente');
+                    cargarCursos();
+                } else {
+                    alert('❌ Error: ' + result.mensaje);
+                }
+            } catch (error) {
+                alert('❌ Error al eliminar curso: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
+
