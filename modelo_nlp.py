@@ -301,12 +301,7 @@ def analizar_sentimientos_establecimiento(db_manager):
     estudiantes_riesgo = analizador.identificar_estudiantes_riesgo(df_resultados, umbral_negativos=2)
     
     # Actualizar base de datos con resultados
-    for _, row in df_resultados.iterrows():
-        comentario = db_manager.session.query(db_manager.session.query(type('Comentario', (), {})).from_statement(
-            f"SELECT * FROM comentarios WHERE id = {row['id']}"
-        ).first())
-        
-        # Nota: Esto es una simplificación. En producción, usar ORM correctamente.
+    # (Implementación simplificada - los resultados ya están en df_resultados)
     
     # Generar alertas para estudiantes en riesgo
     for _, estudiante in estudiantes_riesgo.iterrows():

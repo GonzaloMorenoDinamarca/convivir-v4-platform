@@ -5,10 +5,12 @@ services:
     region: oregon
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 2
+    startCommand: gunicorn start:app --bind 0.0.0.0:$PORT --timeout 300 --workers 1 --threads 2 --worker-class gthread
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: TF_ENABLE_ONEDNN_OPTS
         value: 0
+      - key: FLASK_ENV
+        value: production
 

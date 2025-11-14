@@ -329,10 +329,9 @@ def analizar_red_social_establecimiento(db_manager):
             'mensaje': 'No hay interacciones registradas para analizar'
         }
     
-    # Obtener estudiantes
-    estudiantes = db_manager.session.query(db_manager.session.query(type('Estudiante', (), {})).from_statement(
-        "SELECT estudiante_id, curso_id, genero, edad FROM estudiantes"
-    ).all())
+    # Obtener estudiantes usando el método del DatabaseManager
+    from database import Estudiante
+    estudiantes = db_manager.session.query(Estudiante).all()
     
     df_estudiantes = pd.DataFrame([
         {'estudiante_id': e.estudiante_id, 'curso_id': e.curso_id, 'genero': e.genero, 'edad': e.edad}

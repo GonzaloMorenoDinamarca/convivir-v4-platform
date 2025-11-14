@@ -28,6 +28,8 @@ from modelo_gnn import analizar_red_social_establecimiento, AnalizadorRedesSocia
 
 app = Flask(__name__)
 app.secret_key = 'convivir_v4_secret_key_2025'
+app.config['DEBUG'] = False
+app.config['ENV'] = 'production'
 
 # Inicializar base de datos
 db = DatabaseManager('convivir_v4.db')
@@ -875,4 +877,76 @@ def api_cursos_disponibles():
             })
     except Exception as e:
         return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+
+@app.route('/api/generar_reporte', methods=['GET'])
+def api_generar_reporte():
+    """Genera un reporte completo del establecimiento"""
+    try:
+        # Obtener estadísticas generales
+        with db.get_session() as session:
+            # Contar registros
+            total_estudiantes = session.execute(text("SELECT COUNT(*) FROM estudiantes")).scalar()
+            total_cursos = session.execute(text("SELECT COUNT(DISTINCT curso_id) FROM cursos_temporal")).scalar()
+            total_interacciones = session.execute(text("SELECT COUNT(*) FROM interacciones_sociales")).scalar()
+            total_alertas = session.execute(text("SELECT COUNT(*) FROM alertas WHERE estado='pendiente'")).scalar()
+            
+            # Calcular promedios
+            clima_promedio = session.execute(text(
+                "SELECT AVG(clima_escolar_promedio) FROM cursos_temporal"
+            )).scalar() or 0
+            
+            # Contar semanas de datos
+            semanas_datos = session.execute(text(
+                "SELECT COUNT(DISTINCT fecha_registro) FROM cursos_temporal"
+            )).scalar() or 0
+            
+            reporte_resumen = {
+                'fecha_generacion': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'total_estudiantes': total_estudiantes,
+                'total_cursos': total_cursos,
+                'total_interacciones': total_interacciones,
+                'alertas_pendientes': total_alertas,
+                'clima_promedio': round(clima_promedio, 2),
+                'semanas_datos_recolectados': semanas_datos,
+                'confiabilidad': 'BAJA' if semanas_datos < 12 else 'MEDIA' if semanas_datos < 52 else 'ALTA'
+            }
+            
+            return jsonify({
+                'exito': True,
+                'mensaje': f'Reporte generado exitosamente. Se han analizado {total_estudiantes} estudiantes en {total_cursos} cursos con {semanas_datos} semanas de datos.',
+                'reporte': reporte_resumen
+            })
+    except Exception as e:
+        return jsonify({
+            'exito': False,
+            'mensaje': f'Error al generar reporte: {str(e)}'
+        })
+
+
+# ============================================================================
+# INICIO DE LA APLICACIÓN
+# ============================================================================
+
+if __name__ == '__main__':
+    print("=" * 80)
+    print("🎓 CONVIVIR v4.0 - Plataforma Evolucionada")
+    print("=" * 80)
+    
+    # Inicializar datos solo en el proceso principal
+    inicializar_datos()
+    
+    print("=" * 80)
+    print("✅ Sistema listo para usar")
+    print("=" * 80)
+    
+    # Obtener puerto desde variable de entorno o usar 5000 por defecto
+    port = int(os.environ.get('PORT', 5000))
+    
+    print(f"🌐 Acceda a la aplicación en: http://localhost:{port}")
+    print("=" * 80)
+    
+    # Iniciar servidor en modo producción (sin debug, sin reloader)
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
