@@ -229,8 +229,27 @@ class DatabaseManager:
     """Gestiona todas las operaciones con la base de datos"""
     
     def __init__(self, db_path='convivir.db'):
-        self.db_path = db_path
-        self.engine = create_engine(f'sqlite:///{db_path}')
+        import os
+        
+        # Detectar si estamos en producción (Render) con PostgreSQL
+        database_url = os.environ.get('DATABASE_URL')
+        
+        if database_url:
+            # Render proporciona DATABASE_URL con postgres://, pero SQLAlchemy necesita postgresql://
+            if database_url.startswith('postgres://'):
+                database_url = database_url.replace('postgres://', 'postgresql://', 1)
+            
+            print(f"✅ Usando PostgreSQL en producción")
+            self.db_path = database_url
+            self.engine = create_engine(database_url)
+            self.is_postgres = True
+        else:
+            # Desarrollo local con SQLite
+            print(f"✅ Usando SQLite local: {db_path}")
+            self.db_path = db_path
+            self.engine = create_engine(f'sqlite:///{db_path}')
+            self.is_postgres = False
+        
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()

@@ -24,6 +24,7 @@ networkx==3.2.1
 
 # Base de Datos
 sqlalchemy==2.0.23
+psycopg2-binary==2.9.9  # Driver PostgreSQL para producción
 
 # Visualización
 plotly==5.18.0
