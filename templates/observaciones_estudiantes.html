@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observaciones de Estudiantes - CONVIVIR v4.0</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .observaciones-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .filtros-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .filtros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .observacion-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            border-left: 4px solid #4299e1;
+        }
+        
+        .observacion-card.positivo {
+            border-left-color: #48bb78;
+        }
+        
+        .observacion-card.preocupacion {
+            border-left-color: #f56565;
+        }
+        
+        .observacion-card.academico {
+            border-left-color: #ed8936;
+        }
+        
+        .observacion-card.social {
+            border-left-color: #9f7aea;
+        }
+        
+        .observacion-card.emocional {
+            border-left-color: #ecc94b;
+        }
+        
+        .observacion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .estudiante-info {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 16px;
+        }
+        
+        .fecha-info {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .tipo-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 10px;
+        }
+        
+        .tipo-badge.positivo {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .tipo-badge.preocupacion {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .tipo-badge.academico {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+        
+        .tipo-badge.social {
+            background: #e9d8fd;
+            color: #44337a;
+        }
+        
+        .tipo-badge.emocional {
+            background: #fefcbf;
+            color: #744210;
+        }
+        
+        .comentario-text {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+        
+        .autor-info {
+            color: #a0aec0;
+            font-size: 13px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <h1>🎓 CONVIVIR v4.0</h1>
+            <p>Observaciones de Estudiantes</p>
+        </div>
+        <div class="nav-links">
+            <a href="/">🏠 Inicio</a>
+            <a href="/ingresar_datos">📝 Ingresar Datos</a>
+            <a href="/estudiantes">👥 Estudiantes</a>
+            <a href="/observaciones_estudiantes" class="active">💬 Observaciones</a>
+        </div>
+    </nav>
+    
+    <div class="observaciones-container">
+        <h2 style="margin-bottom: 20px;">💬 Observaciones Individuales de Estudiantes</h2>
+        
+        <!-- Estadísticas -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-observaciones">0</div>
+                <div class="stat-label">Total Observaciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="estudiantes-con-obs">0</div>
+                <div class="stat-label">Estudiantes con Observaciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="obs-recientes">0</div>
+                <div class="stat-label">Última Semana</div>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="filtros-section">
+            <h3 style="margin-bottom: 15px;">🔍 Filtros</h3>
+            <div class="filtros-grid">
+                <div class="form-group">
+                    <label for="filtro-estudiante">ID Estudiante</label>
+                    <input type="text" id="filtro-estudiante" placeholder="Ej: EST_0001">
+                </div>
+                
+                <div class="form-group">
+                    <label for="filtro-tipo">Tipo de Observación</label>
+                    <select id="filtro-tipo">
+                        <option value="">Todos</option>
+                        <option value="positivo">Comportamiento Positivo</option>
+                        <option value="preocupacion">Motivo de Preocupación</option>
+                        <option value="academico">Rendimiento Académico</option>
+                        <option value="social">Interacción Social</option>
+                        <option value="emocional">Estado Emocional</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filtro-fecha-desde">Desde</label>
+                    <input type="date" id="filtro-fecha-desde">
+                </div>
+                
+                <div class="form-group">
+                    <label for="filtro-fecha-hasta">Hasta</label>
+                    <input type="date" id="filtro-fecha-hasta">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Buscar</button>
+                <button class="btn btn-secondary" onclick="limpiarFiltros()">🔄 Limpiar Filtros</button>
+            </div>
+        </div>
+        
+        <!-- Lista de Observaciones -->
+        <div id="observaciones-lista">
+            <div class="no-data">
+                <p>Cargando observaciones...</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer style="text-align: center; padding: 20px; color: #718096; margin-top: 40px;">
+        <p>Desarrollado por Gonzalo Moreno | CONVIVIR v4.0 - Plataforma de Prevención de Violencia Escolar</p>
+    </footer>
+    
+    <script>
+        let todasLasObservaciones = [];
+        
+        // Cargar observaciones al iniciar
+        window.addEventListener('DOMContentLoaded', async function() {
+            await cargarObservaciones();
+        });
+        
+        async function cargarObservaciones() {
+            try {
+                const response = await fetch('/api/observaciones_estudiantes');
+                const data = await response.json();
+                
+                if (data.exito) {
+                    todasLasObservaciones = data.observaciones;
+                    actualizarEstadisticas(data.estadisticas);
+                    mostrarObservaciones(todasLasObservaciones);
+                } else {
+                    mostrarError('Error al cargar observaciones: ' + data.mensaje);
+                }
+            } catch (error) {
+                mostrarError('Error de conexión: ' + error.message);
+            }
+        }
+        
+        function actualizarEstadisticas(stats) {
+            document.getElementById('total-observaciones').textContent = stats.total;
+            document.getElementById('estudiantes-con-obs').textContent = stats.estudiantes_unicos;
+            document.getElementById('obs-recientes').textContent = stats.ultima_semana;
+        }
+        
+        function mostrarObservaciones(observaciones) {
+            const lista = document.getElementById('observaciones-lista');
+            
+            if (observaciones.length === 0) {
+                lista.innerHTML = `
+                    <div class="no-data">
+                        <p>📭 No se encontraron observaciones con los filtros aplicados.</p>
+                        <p style="margin-top: 10px;">
+                            <a href="/ingresar_datos" class="btn btn-primary">➕ Agregar Primera Observación</a>
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            lista.innerHTML = observaciones.map(obs => `
+                <div class="observacion-card ${obs.tipo}">
+                    <div class="observacion-header">
+                        <div>
+                            <span class="tipo-badge ${obs.tipo}">${formatearTipo(obs.tipo)}</span>
+                            <span class="estudiante-info">Estudiante: ${obs.estudiante_id}</span>
+                        </div>
+                        <span class="fecha-info">${formatearFecha(obs.fecha)}</span>
+                    </div>
+                    <div class="comentario-text">${obs.comentario}</div>
+                    <div class="autor-info">Registrado por: ${obs.autor}</div>
+                </div>
+            `).join('');
+        }
+        
+        function formatearTipo(tipo) {
+            const tipos = {
+                'positivo': 'Positivo',
+                'preocupacion': 'Preocupación',
+                'academico': 'Académico',
+                'social': 'Social',
+                'emocional': 'Emocional',
+                'general': 'General'
+            };
+            return tipos[tipo] || tipo;
+        }
+        
+        function formatearFecha(fecha) {
+            const date = new Date(fecha);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        function aplicarFiltros() {
+            const filtroEstudiante = document.getElementById('filtro-estudiante').value.toLowerCase();
+            const filtroTipo = document.getElementById('filtro-tipo').value;
+            const filtroDesde = document.getElementById('filtro-fecha-desde').value;
+            const filtroHasta = document.getElementById('filtro-fecha-hasta').value;
+            
+            let observacionesFiltradas = todasLasObservaciones.filter(obs => {
+                // Filtro por estudiante
+                if (filtroEstudiante && !obs.estudiante_id.toLowerCase().includes(filtroEstudiante)) {
+                    return false;
+                }
+                
+                // Filtro por tipo
+                if (filtroTipo && obs.tipo !== filtroTipo) {
+                    return false;
+                }
+                
+                // Filtro por fecha desde
+                if (filtroDesde && obs.fecha < filtroDesde) {
+                    return false;
+                }
+                
+                // Filtro por fecha hasta
+                if (filtroHasta && obs.fecha > filtroHasta) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            mostrarObservaciones(observacionesFiltradas);
+        }
+        
+        function limpiarFiltros() {
+            document.getElementById('filtro-estudiante').value = '';
+            document.getElementById('filtro-tipo').value = '';
+            document.getElementById('filtro-fecha-desde').value = '';
+            document.getElementById('filtro-fecha-hasta').value = '';
+            mostrarObservaciones(todasLasObservaciones);
+        }
+        
+        function mostrarError(mensaje) {
+            const lista = document.getElementById('observaciones-lista');
+            lista.innerHTML = `
+                <div class="no-data">
+                    <p style="color: #e53e3e;">⚠️ ${mensaje}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+

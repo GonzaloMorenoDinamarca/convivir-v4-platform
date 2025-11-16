@@ -390,6 +390,7 @@ def analizar_red_social_establecimiento(db_manager):
     
     return {
         'exito': True,
+        'grafo': analizador.grafo,  # Agregar el grafo NetworkX
         'reporte_general': reporte_general,
         'estudiantes_aislados': aislados,
         'lideres_sociales': lideres,

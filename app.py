@@ -512,6 +512,12 @@ def pagina_ingresar_datos():
     return render_template('ingresar_datos.html')
 
 
+@app.route('/observaciones_estudiantes')
+def pagina_observaciones_estudiantes():
+    """Página para ver observaciones individuales de estudiantes"""
+    return render_template('observaciones_estudiantes.html')
+
+
 @app.route('/api/progreso_datos', methods=['GET'])
 def api_progreso_datos():
     """Retorna el progreso de recolección de datos"""
@@ -627,6 +633,43 @@ def api_ingresar_datos_semanales():
                 
                 session.commit()
             
+            # Procesar observaciones individuales (si existen)
+            observaciones_guardadas = 0
+            i = 1
+            while f'estudiante_obs_{i}' in data:
+                estudiante_id = data.get(f'estudiante_obs_{i}')
+                tipo_obs = data.get(f'tipo_obs_{i}')
+                comentario = data.get(f'comentario_obs_{i}')
+                
+                # Solo guardar si hay datos completos
+                if estudiante_id and comentario and comentario.strip():
+                    try:
+                        # Guardar comentario en la tabla de comentarios
+                        query_comentario = text("""
+                            INSERT INTO comentarios (
+                                estudiante_id, fecha, comentario, tipo, autor
+                            ) VALUES (
+                                :estudiante_id, :fecha, :comentario, :tipo, 'Docente'
+                            )
+                        """)
+                        
+                        session.execute(query_comentario, {
+                            'estudiante_id': estudiante_id,
+                            'fecha': data['fecha'],
+                            'comentario': comentario,
+                            'tipo': tipo_obs if tipo_obs else 'general'
+                        })
+                        
+                        observaciones_guardadas += 1
+                    except Exception as e:
+                        print(f"⚠️ Error al guardar observación {i}: {e}")
+                
+                i += 1
+            
+            if observaciones_guardadas > 0:
+                session.commit()
+                print(f"✅ {observaciones_guardadas} observaciones individuales guardadas")
+            
             # Contar total de semanas
             query_count = text("""
                 SELECT COUNT(DISTINCT fecha_registro) as semanas
@@ -658,12 +701,17 @@ def api_ingresar_datos_semanales():
                 except Exception as e:
                     print(f"⚠️ No se pudo reentrenar modelo: {e}")
             
+            mensaje = f'Datos guardados exitosamente'
+            if observaciones_guardadas > 0:
+                mensaje += f' ({observaciones_guardadas} observaciones individuales registradas)'
+            
             return jsonify({
                 'exito': True,
-                'mensaje': 'Datos guardados exitosamente',
+                'mensaje': mensaje,
                 'semanas_totales': semanas_totales,
                 'curso': data['curso'],
-                'fecha': data['fecha']
+                'fecha': data['fecha'],
+                'observaciones_guardadas': observaciones_guardadas
             })
             
     except Exception as e:
@@ -671,6 +719,56 @@ def api_ingresar_datos_semanales():
             'exito': False,
             'mensaje': f'Error al guardar datos: {str(e)}'
         })
+
+
+@app.route('/api/observaciones_estudiantes', methods=['GET'])
+def api_observaciones_estudiantes():
+    """Obtiene todas las observaciones individuales de estudiantes"""
+    try:
+        with db.get_session() as session:
+            # Obtener todas las observaciones
+            query = text("""
+                SELECT 
+                    estudiante_id,
+                    fecha,
+                    comentario,
+                    tipo,
+                    autor
+                FROM comentarios
+                ORDER BY fecha DESC
+            """)
+            
+            resultados = session.execute(query).fetchall()
+            
+            observaciones = []
+            for row in resultados:
+                observaciones.append({
+                    'estudiante_id': row[0],
+                    'fecha': row[1],
+                    'comentario': row[2],
+                    'tipo': row[3] if row[3] else 'general',
+                    'autor': row[4] if row[4] else 'Sistema'
+                })
+            
+            # Calcular estadísticas
+            estudiantes_unicos = len(set([obs['estudiante_id'] for obs in observaciones]))
+            
+            # Observaciones de la última semana
+            from datetime import datetime, timedelta
+            hace_una_semana = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            obs_recientes = len([obs for obs in observaciones if obs['fecha'] >= hace_una_semana])
+            
+            return jsonify({
+                'exito': True,
+                'observaciones': observaciones,
+                'estadisticas': {
+                    'total': len(observaciones),
+                    'estudiantes_unicos': estudiantes_unicos,
+                    'ultima_semana': obs_recientes
+                }
+            })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
 
 
 @app.route('/api/estadisticas_recoleccion', methods=['GET'])
@@ -715,9 +813,21 @@ def api_estadisticas_recoleccion():
 # ==================== GESTIÓN DE CURSOS MÚLTIPLES ====================
 
 @app.route('/configurar_cursos')
-def pagina_configurar_cursos():
+def configurar_cursos():
     """Página de configuración de cursos"""
     return render_template('configurar_cursos.html')
+
+
+@app.route('/gestionar_estudiantes')
+def gestionar_estudiantes():
+    """Página para gestionar estudiantes"""
+    return render_template('gestionar_estudiantes.html')
+
+
+@app.route('/gestionar_cohortes')
+def gestionar_cohortes():
+    """Página para gestionar cohortes y promociones"""
+    return render_template('gestionar_cohortes.html')
 
 
 @app.route('/api/listar_cursos', methods=['GET'])
@@ -855,6 +965,251 @@ def api_eliminar_curso():
             
     except Exception as e:
         return jsonify({'exito': False, 'mensaje': f'Error al eliminar curso: {str(e)}'})
+
+
+@app.route('/api/eliminar_estudiante', methods=['POST'])
+def api_eliminar_estudiante():
+    """Elimina un estudiante y todos sus datos relacionados"""
+    try:
+        data = request.json
+        estudiante_id = data.get('estudiante_id')
+        
+        if not estudiante_id:
+            return jsonify({'exito': False, 'mensaje': 'ID de estudiante requerido'})
+        
+        with db.get_session() as session:
+            # Eliminar interacciones sociales del estudiante
+            query_delete_interacciones = text("""
+                DELETE FROM interacciones_sociales
+                WHERE estudiante_origen_id = :estudiante_id
+                   OR estudiante_destino_id = :estudiante_id
+            """)
+            session.execute(query_delete_interacciones, {'estudiante_id': estudiante_id})
+            
+            # Eliminar alertas del estudiante
+            query_delete_alertas = text("""
+                DELETE FROM alertas
+                WHERE estudiante_id = :estudiante_id
+            """)
+            session.execute(query_delete_alertas, {'estudiante_id': estudiante_id})
+            
+            # Eliminar comentarios del estudiante
+            query_delete_comentarios = text("""
+                DELETE FROM comentarios
+                WHERE estudiante_id = :estudiante_id
+            """)
+            session.execute(query_delete_comentarios, {'estudiante_id': estudiante_id})
+            
+            # Eliminar el estudiante
+            query_delete_estudiante = text("""
+                DELETE FROM estudiantes
+                WHERE estudiante_id = :estudiante_id
+            """)
+            result = session.execute(query_delete_estudiante, {'estudiante_id': estudiante_id})
+            
+            session.commit()
+            
+            if result.rowcount > 0:
+                return jsonify({
+                    'exito': True,
+                    'mensaje': f'Estudiante "{estudiante_id}" eliminado exitosamente'
+                })
+            else:
+                return jsonify({
+                    'exito': False,
+                    'mensaje': f'No se encontró el estudiante "{estudiante_id}"'
+                })
+            
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error al eliminar estudiante: {str(e)}'})
+
+
+@app.route('/api/editar_estudiante', methods=['POST'])
+def api_editar_estudiante():
+    """Edita la información de un estudiante"""
+    try:
+        data = request.json
+        estudiante_id = data.get('estudiante_id')
+        nuevo_nombre = data.get('nuevo_nombre')
+        
+        if not estudiante_id:
+            return jsonify({'exito': False, 'mensaje': 'ID de estudiante requerido'})
+        
+        if not nuevo_nombre:
+            return jsonify({'exito': False, 'mensaje': 'Nuevo nombre requerido'})
+        
+        with db.get_session() as session:
+            # Actualizar el nombre del estudiante
+            query_update = text("""
+                UPDATE estudiantes
+                SET estudiante_id = :nuevo_nombre
+                WHERE estudiante_id = :estudiante_id
+            """)
+            result = session.execute(query_update, {
+                'nuevo_nombre': nuevo_nombre,
+                'estudiante_id': estudiante_id
+            })
+            
+            session.commit()
+            
+            if result.rowcount > 0:
+                return jsonify({
+                    'exito': True,
+                    'mensaje': f'Estudiante actualizado exitosamente a "{nuevo_nombre}"'
+                })
+            else:
+                return jsonify({
+                    'exito': False,
+                    'mensaje': f'No se encontró el estudiante "{estudiante_id}"'
+                })
+            
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error al editar estudiante: {str(e)}'})
+
+
+@app.route('/api/listar_estudiantes', methods=['GET'])
+def api_listar_estudiantes():
+    """Lista todos los estudiantes registrados"""
+    try:
+        with db.get_session() as session:
+            query = text("""
+                SELECT estudiante_id, curso_id, genero, edad
+                FROM estudiantes
+                ORDER BY curso_id, estudiante_id
+            """)
+            
+            resultados = session.execute(query).fetchall()
+            estudiantes = [{
+                'estudiante_id': row[0],
+                'curso_id': row[1],
+                'genero': row[2],
+                'edad': row[3]
+            } for row in resultados]
+            
+            return jsonify({
+                'exito': True,
+                'estudiantes': estudiantes,
+                'total': len(estudiantes)
+            })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/listar_cohortes', methods=['GET'])
+def api_listar_cohortes():
+    """Lista todas las cohortes con sus cursos actuales"""
+    try:
+        with db.get_session() as session:
+            query = text("""
+                SELECT 
+                    c.cohorte_id,
+                    c.nombre_cohorte,
+                    c.ano_ingreso,
+                    ca.nombre_curso as curso_actual,
+                    ca.ano_academico,
+                    COUNT(e.estudiante_id) as total_estudiantes
+                FROM cohortes c
+                LEFT JOIN cursos_anuales ca ON c.cohorte_id = ca.cohorte_id AND ca.activo = 1
+                LEFT JOIN estudiantes e ON c.cohorte_id = e.cohorte_id
+                WHERE c.activo = 1
+                GROUP BY c.cohorte_id
+                ORDER BY c.ano_ingreso DESC, c.nombre_cohorte
+            """)
+            
+            resultados = session.execute(query).fetchall()
+            cohortes = [{
+                'cohorte_id': row[0],
+                'nombre_cohorte': row[1],
+                'ano_ingreso': row[2],
+                'curso_actual': row[3],
+                'ano_academico': row[4],
+                'total_estudiantes': row[5]
+            } for row in resultados]
+            
+            return jsonify({
+                'exito': True,
+                'cohortes': cohortes,
+                'total': len(cohortes)
+            })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/promover_cohorte', methods=['POST'])
+def api_promover_cohorte():
+    """Promueve una cohorte al siguiente nivel sin perder datos históricos"""
+    try:
+        data = request.json
+        cohorte_id = data.get('cohorte_id')
+        nuevo_nombre_curso = data.get('nuevo_nombre_curso')
+        nuevo_ano = data.get('nuevo_ano_academico')
+        
+        if not all([cohorte_id, nuevo_nombre_curso, nuevo_ano]):
+            return jsonify({'exito': False, 'mensaje': 'Faltan parámetros requeridos'})
+        
+        with db.get_session() as session:
+            # 1. Desactivar el curso actual
+            query_desactivar = text("""
+                UPDATE cursos_anuales
+                SET activo = 0
+                WHERE cohorte_id = :cohorte_id AND activo = 1
+            """)
+            session.execute(query_desactivar, {'cohorte_id': cohorte_id})
+            
+            # 2. Crear nuevo curso anual
+            query_crear = text("""
+                INSERT INTO cursos_anuales (cohorte_id, ano_academico, nombre_curso, activo)
+                VALUES (:cohorte_id, :ano_academico, :nombre_curso, 1)
+            """)
+            session.execute(query_crear, {
+                'cohorte_id': cohorte_id,
+                'ano_academico': nuevo_ano,
+                'nombre_curso': nuevo_nombre_curso
+            })
+            
+            session.commit()
+            
+            return jsonify({
+                'exito': True,
+                'mensaje': f'Cohorte promovida exitosamente a "{nuevo_nombre_curso}" ({nuevo_ano})'
+            })
+            
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error al promover cohorte: {str(e)}'})
+
+
+@app.route('/api/historial_cohorte/<int:cohorte_id>', methods=['GET'])
+def api_historial_cohorte(cohorte_id):
+    """Obtiene el historial completo de una cohorte a lo largo de los años"""
+    try:
+        with db.get_session() as session:
+            query = text("""
+                SELECT 
+                    curso_anual_id,
+                    ano_academico,
+                    nombre_curso,
+                    activo,
+                    fecha_creacion
+                FROM cursos_anuales
+                WHERE cohorte_id = :cohorte_id
+                ORDER BY ano_academico ASC
+            """)
+            
+            resultados = session.execute(query, {'cohorte_id': cohorte_id}).fetchall()
+            historial = [{
+                'curso_anual_id': row[0],
+                'ano_academico': row[1],
+                'nombre_curso': row[2],
+                'activo': bool(row[3]),
+                'fecha_creacion': row[4]
+            } for row in resultados]
+            
+            return jsonify({
+                'exito': True,
+                'historial': historial
+            })
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
 
 
 @app.route('/api/cursos_disponibles', methods=['GET'])

@@ -16,6 +16,35 @@ Base = declarative_base()
 # MODELOS DE DATOS (ORM)
 # ============================================================================
 
+class Cohorte(Base):
+    """Representa un grupo de estudiantes que progresa junto a lo largo de los años"""
+    __tablename__ = 'cohortes'
+    
+    cohorte_id = Column(Integer, primary_key=True, autoincrement=True)
+    nombre_cohorte = Column(String(200), nullable=False)  # ej. "Generación 2025-2028"
+    ano_ingreso = Column(Integer, nullable=False)  # Año en que inició la cohorte
+    fecha_creacion = Column(DateTime, default=datetime.now)
+    activo = Column(Boolean, default=True)
+    
+    # Relaciones
+    cursos_anuales = relationship("CursoAnual", back_populates="cohorte")
+
+
+class CursoAnual(Base):
+    """Representa la asignación de un nombre de curso a una cohorte en un año específico"""
+    __tablename__ = 'cursos_anuales'
+    
+    curso_anual_id = Column(Integer, primary_key=True, autoincrement=True)
+    cohorte_id = Column(Integer, ForeignKey('cohortes.cohorte_id'), nullable=False)
+    ano_academico = Column(Integer, nullable=False)
+    nombre_curso = Column(String(50), nullable=False)  # ej. "1° A", "2° A"
+    activo = Column(Boolean, default=True)  # Solo uno puede estar activo por cohorte
+    fecha_creacion = Column(DateTime, default=datetime.now)
+    
+    # Relaciones
+    cohorte = relationship("Cohorte", back_populates="cursos_anuales")
+
+
 class Establecimiento(Base):
     __tablename__ = 'establecimientos'
     
@@ -66,7 +95,8 @@ class Estudiante(Base):
     id = Column(Integer, primary_key=True)
     establecimiento_id = Column(String(50), ForeignKey('establecimientos.establecimiento_id'))
     estudiante_id = Column(String(50), unique=True, nullable=False)
-    curso_id = Column(String(20))
+    cohorte_id = Column(Integer, ForeignKey('cohortes.cohorte_id'))  # Vínculo permanente a la cohorte
+    curso_id = Column(String(20))  # Mantener por compatibilidad con datos antiguos
     genero = Column(String(10))
     edad = Column(Integer)
     tiene_nee = Column(Boolean)
@@ -204,6 +234,25 @@ class DatabaseManager:
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
+        self.SessionFactory = Session
+    
+    def get_session(self):
+        """Context manager para obtener una sesión de base de datos"""
+        from contextlib import contextmanager
+        
+        @contextmanager
+        def session_scope():
+            session = self.SessionFactory()
+            try:
+                yield session
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                session.close()
+        
+        return session_scope()
     
     def cargar_desde_excel(self, excel_path):
         """Carga datos desde el archivo Excel mejorado a la base de datos"""

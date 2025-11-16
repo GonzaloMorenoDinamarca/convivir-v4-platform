@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Cohortes - CONVIVIR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .cohortes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .cohortes-table th,
+        .cohortes-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .cohortes-table th {
+            background: #f8f9fa;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .cohortes-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            margin-right: 5px;
+        }
+        
+        .btn-promote {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-promote:hover {
+            background: #38a169;
+        }
+        
+        .btn-history {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-history:hover {
+            background: #3182ce;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #718096;
+            color: white;
+            padding: 12px 24px;
+        }
+        
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+        
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .badge-active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .badge-inactive {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .timeline {
+            margin-top: 20px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            border-left: 3px solid #e0e0e0;
+            margin-left: 20px;
+        }
+        
+        .timeline-item.active {
+            border-left-color: #48bb78;
+            background: #f0fff4;
+        }
+        
+        .timeline-year {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 60px;
+        }
+        
+        .timeline-course {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 Gestionar Cohortes</h1>
+            <p>Seguimiento longitudinal de grupos de estudiantes a lo largo de los años</p>
+        </div>
+        
+        <div class="content">
+            <!-- Tabla de cohortes -->
+            <div class="section">
+                <h2>📋 Cohortes Activas</h2>
+                <div id="tabla-container">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔄</div>
+                        <p>Cargando cohortes...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botones de navegación -->
+            <div class="btn-container">
+                <button class="btn btn-secondary" onclick="window.location.href='/'">Volver al Dashboard</button>
+                <button class="btn btn-primary" onclick="window.location.href='/configurar_cursos'">Configurar Cursos</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para promover cohorte -->
+    <div id="modal-promover" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎓 Promover Cohorte</h2>
+            </div>
+            <form id="form-promover">
+                <div class="form-group">
+                    <label>Cohorte:</label>
+                    <input type="text" id="promover-nombre-cohorte" readonly style="background: #f0f0f0;">
+                    <input type="hidden" id="promover-cohorte-id">
+                </div>
+                <div class="form-group">
+                    <label>Curso Actual:</label>
+                    <input type="text" id="promover-curso-actual" readonly style="background: #f0f0f0;">
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Nombre de Curso: *</label>
+                    <input type="text" id="promover-nuevo-curso" placeholder="Ej: 2° A, 3° A, 4° A" required>
+                </div>
+                <div class="form-group">
+                    <label>Año Académico: *</label>
+                    <input type="number" id="promover-nuevo-ano" min="2025" max="2030" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-promover')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Promover Cohorte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal para ver historial -->
+    <div id="modal-historial" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📜 Historial de la Cohorte</h2>
+            </div>
+            <div id="historial-content">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⏳</div>
+                    <p>Cargando historial...</p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-historial')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Cargar cohortes al iniciar
+        window.addEventListener('DOMContentLoaded', cargarCohortes);
+        
+        // Form submit para promover
+        document.getElementById('form-promover').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await promoverCohorte();
+        });
+        
+        async function cargarCohortes() {
+            try {
+                const response = await fetch('/api/listar_cohortes');
+                const data = await response.json();
+                
+                if (data.exito) {
+                    mostrarCohortes(data.cohortes);
+                } else {
+                    mostrarError('No se pudieron cargar las cohortes');
+                }
+            } catch (error) {
+                mostrarError('Error al cargar cohortes: ' + error.message);
+            }
+        }
+        
+        function mostrarCohortes(cohortes) {
+            const container = document.getElementById('tabla-container');
+            
+            if (cohortes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🧬</div>
+                        <p>No hay cohortes registradas</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <table class="cohortes-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre de la Cohorte</th>
+                            <th>Año de Ingreso</th>
+                            <th>Curso Actual</th>
+                            <th>Año Académico</th>
+                            <th>N° Estudiantes</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            cohortes.forEach(cohorte => {
+                html += `
+                    <tr>
+                        <td><strong>${cohorte.cohorte_id}</strong></td>
+                        <td>${cohorte.nombre_cohorte}</td>
+                        <td>${cohorte.ano_ingreso}</td>
+                        <td><strong>${cohorte.curso_actual || 'N/A'}</strong></td>
+                        <td>${cohorte.ano_academico || 'N/A'}</td>
+                        <td>${cohorte.total_estudiantes} estudiantes</td>
+                        <td>
+                            <button class="btn btn-promote" onclick="abrirModalPromover(${cohorte.cohorte_id}, '${cohorte.nombre_cohorte}', '${cohorte.curso_actual}', ${cohorte.ano_academico})">🎓 Promover</button>
+                            <button class="btn btn-history" onclick="verHistorial(${cohorte.cohorte_id}, '${cohorte.nombre_cohorte}')">📜 Historial</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function abrirModalPromover(cohorteId, nombreCohorte, cursoActual, anoActual) {
+            document.getElementById('promover-cohorte-id').value = cohorteId;
+            document.getElementById('promover-nombre-cohorte').value = nombreCohorte;
+            document.getElementById('promover-curso-actual').value = cursoActual;
+            document.getElementById('promover-nuevo-ano').value = anoActual + 1;
+            document.getElementById('modal-promover').style.display = 'block';
+        }
+        
+        async function promoverCohorte() {
+            const cohorteId = document.getElementById('promover-cohorte-id').value;
+            const nuevoCurso = document.getElementById('promover-nuevo-curso').value;
+            const nuevoAno = document.getElementById('promover-nuevo-ano').value;
+            
+            if (!nuevoCurso.trim()) {
+                alert('El nuevo nombre de curso no puede estar vacío');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/promover_cohorte', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cohorte_id: parseInt(cohorteId),
+                        nuevo_nombre_curso: nuevoCurso,
+                        nuevo_ano_academico: parseInt(nuevoAno)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.exito) {
+                    alert(data.mensaje);
+                    cerrarModal('modal-promover');
+                    await cargarCohortes();
+                } else {
+                    alert('Error: ' + data.mensaje);
+                }
+            } catch (error) {
+                alert('Error al promover cohorte: ' + error.message);
+            }
+        }
+        
+        async function verHistorial(cohorteId, nombreCohorte) {
+            document.getElementById('modal-historial').style.display = 'block';
+            
+            try {
+                const response = await fetch(`/api/historial_cohorte/${cohorteId}`);
+                const data = await response.json();
+                
+                if (data.exito) {
+                    mostrarHistorial(nombreCohorte, data.historial);
+                } else {
+                    document.getElementById('historial-content').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⚠️</div>
+                            <p>Error al cargar historial</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('historial-content').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function mostrarHistorial(nombreCohorte, historial) {
+            let html = `<h3>${nombreCohorte}</h3><div class="timeline">`;
+            
+            historial.forEach(item => {
+                const claseActivo = item.activo ? 'active' : '';
+                const badge = item.activo ? '<span class="badge badge-active">Actual</span>' : '<span class="badge badge-inactive">Histórico</span>';
+                
+                html += `
+                    <div class="timeline-item ${claseActivo}">
+                        <div class="timeline-year">${item.ano_academico}</div>
+                        <div class="timeline-course">
+                            <strong>${item.nombre_curso}</strong> ${badge}
+                            <br>
+                            <small style="color: #718096;">Creado: ${new Date(item.fecha_creacion).toLocaleDateString()}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            document.getElementById('historial-content').innerHTML = html;
+        }
+        
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function mostrarError(mensaje) {
+            const container = document.getElementById('tabla-container');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <p>${mensaje}</p>
+                </div>
+            `;
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+

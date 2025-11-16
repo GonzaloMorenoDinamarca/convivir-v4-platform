@@ -153,6 +153,61 @@
         
         .range-input-group input[type="range"] {
             flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            outline: none;
+        }
+        
+        /* Estilos para el track (barra) */
+        .range-input-group input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+        }
+        
+        .range-input-group input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+        }
+        
+        /* Estilos para el thumb (botón deslizante) */
+        .range-input-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            margin-top: -6px;
+        }
+        
+        .range-input-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Hover effects */
+        .range-input-group input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+        
+        .range-input-group input[type="range"]::-moz-range-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.1);
         }
         
         .range-value {
@@ -439,6 +494,42 @@
                     </div>
                 </div>
                 
+                <!-- Sección 6: Observaciones Individuales (Opcional) -->
+                <div class="form-section">
+                    <h2>6. Observaciones Individuales (Opcional)</h2>
+                    <p class="help-text" style="margin-bottom: 15px;">Registre comentarios u observaciones sobre estudiantes específicos. Estos datos alimentan el análisis de sentimientos y generan alertas individuales.</p>
+                    
+                    <div id="observaciones-container">
+                        <div class="observacion-item" style="background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="estudiante_obs_1">ID del Estudiante</label>
+                                    <input type="text" id="estudiante_obs_1" name="estudiante_obs_1" placeholder="Ej: EST_0001">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="tipo_obs_1">Tipo de Observación</label>
+                                    <select id="tipo_obs_1" name="tipo_obs_1">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="positivo">Comportamiento Positivo</option>
+                                        <option value="preocupacion">Motivo de Preocupación</option>
+                                        <option value="academico">Rendimiento Académico</option>
+                                        <option value="social">Interacción Social</option>
+                                        <option value="emocional">Estado Emocional</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="comentario_obs_1">Comentario</label>
+                                <textarea id="comentario_obs_1" name="comentario_obs_1" rows="2" placeholder="Describa la observación sobre el estudiante"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="agregarObservacion()" style="margin-top: 10px;">➕ Agregar Otra Observación</button>
+                </div>
+                
                 <!-- Botones -->
                 <div class="btn-container">
                     <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Cancelar</button>
@@ -449,6 +540,45 @@
     </div>
     
     <script>
+        let contadorObservaciones = 1;
+        
+        // Agregar nueva observación
+        function agregarObservacion() {
+            contadorObservaciones++;
+            const container = document.getElementById('observaciones-container');
+            const nuevaObs = document.createElement('div');
+            nuevaObs.className = 'observacion-item';
+            nuevaObs.style.cssText = 'background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px;';
+            nuevaObs.innerHTML = `
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="estudiante_obs_${contadorObservaciones}">ID del Estudiante</label>
+                        <input type="text" id="estudiante_obs_${contadorObservaciones}" name="estudiante_obs_${contadorObservaciones}" placeholder="Ej: EST_0001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo_obs_${contadorObservaciones}">Tipo de Observación</label>
+                        <select id="tipo_obs_${contadorObservaciones}" name="tipo_obs_${contadorObservaciones}">
+                            <option value="">Seleccionar...</option>
+                            <option value="positivo">Comportamiento Positivo</option>
+                            <option value="preocupacion">Motivo de Preocupación</option>
+                            <option value="academico">Rendimiento Académico</option>
+                            <option value="social">Interacción Social</option>
+                            <option value="emocional">Estado Emocional</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="comentario_obs_${contadorObservaciones}">Comentario</label>
+                    <textarea id="comentario_obs_${contadorObservaciones}" name="comentario_obs_${contadorObservaciones}" rows="2" placeholder="Describa la observación sobre el estudiante"></textarea>
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="this.parentElement.remove()" style="margin-top: 10px;">❌ Eliminar</button>
+            `;
+            container.appendChild(nuevaObs);
+        }
+        
         // Actualizar valor de range inputs
         function updateRangeValue(input, valueId) {
             document.getElementById(valueId).textContent = input.value;

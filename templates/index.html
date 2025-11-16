@@ -306,8 +306,11 @@
         <!-- Botones de Acción -->
         <div class="action-buttons">
             <button class="btn btn-primary" onclick="window.location.href='/configurar_cursos'" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">⚙️ Configurar Cursos</button>
+            <button class="btn btn-primary" onclick="window.location.href='/gestionar_estudiantes'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">👥 Gestionar Estudiantes</button>
+            <button class="btn btn-primary" onclick="window.location.href='/gestionar_cohortes'" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">🧬 Gestionar Cohortes</button>
             <button class="btn btn-success" onclick="window.location.href='/ingresar_datos'" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">📝 Ingresar Datos Semanales</button>
-            <button class="btn btn-info" onclick="ejecutarAnalisisNLP()">💬 Análisis de Sentimientos (NLP)</button>
+            <button class="btn btn-primary" onclick="window.location.href='/observaciones_estudiantes'" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💬 Ver Observaciones</button>
+            <button class="btn btn-info" onclick="ejecutarAnalisisNLP()">🔍 Análisis de Sentimientos (NLP)</button>
             <button class="btn btn-warning" onclick="generarReporte()">📄 Generar Reporte Completo</button>
         </div>
     </div>
@@ -320,11 +323,11 @@
                 const data = await response.json();
                 
                 if (data.exito) {
-                    document.getElementById('totalEstudiantes').textContent = data.total_estudiantes;
-                    document.getElementById('totalCursos').textContent = data.total_cursos;
-                    document.getElementById('climaPromedio').textContent = data.clima_promedio.toFixed(1);
-                    document.getElementById('alertasPendientes').textContent = data.alertas_pendientes;
-                    document.getElementById('totalInteracciones').textContent = data.total_interacciones;
+                    document.getElementById('totalEstudiantes').textContent = data.total_estudiantes || 0;
+                    document.getElementById('totalCursos').textContent = data.total_cursos || 0;
+                    document.getElementById('climaPromedio').textContent = (data.clima_promedio || 0).toFixed(1);
+                    document.getElementById('alertasPendientes').textContent = data.alertas_pendientes || 0;
+                    document.getElementById('totalInteracciones').textContent = data.total_interacciones || 0;
                 }
             } catch (error) {
                 console.error('Error al cargar estadísticas:', error);
@@ -384,8 +387,8 @@
                         <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; border-left: 4px solid #4299e1;">
                             <h3 style="color: #2c5282; margin-bottom: 10px;">📈 Predicción para las próximas 4 semanas</h3>
                             <p><strong>Predicciones:</strong> ${predData.predicciones.predicciones.map(p => p.toFixed(2)).join(', ')}</p>
-                            <p><strong>Tendencia:</strong> ${predData.predicciones.tendencia}</p>
-                            <p style="margin-top: 10px; color: #2d3748;">${predData.mensaje}</p>
+                            <p><strong>Tendencia:</strong> ${predData.analisis_tendencia ? predData.analisis_tendencia.tendencia : 'No disponible'}</p>
+                            <p style="margin-top: 10px; color: #2d3748;">${predData.analisis_tendencia ? `Cambio esperado: ${predData.analisis_tendencia.cambio_total.toFixed(2)} puntos` : ''}</p>
                         </div>
                     `;
                 }
@@ -504,7 +507,8 @@
                 const data = await response.json();
                 
                 if (data.exito) {
-                    alert(`Análisis completado:\n\nSentimiento general: ${data.sentimiento_general}\nPolaridad promedio: ${data.polaridad_promedio.toFixed(2)}\nComentarios analizados: ${data.total_comentarios}`);
+                    const polaridad = (data.polaridad_promedio || 0).toFixed(2);
+                    alert(`Análisis completado:\n\nSentimiento general: ${data.sentimiento_general}\nPolaridad promedio: ${polaridad}\nComentarios analizados: ${data.total_comentarios}`);
                 } else {
                     alert(`Error: ${data.mensaje}`);
                 }
@@ -539,8 +543,8 @@
                                 <p><strong>Total Cursos:</strong> ${data.total_cursos}</p>
                                 <p><strong>Interacciones Registradas:</strong> ${data.total_interacciones}</p>
                                 <p><strong>Alertas Pendientes:</strong> ${data.alertas_pendientes}</p>
-                                <p><strong>Clima Promedio:</strong> ${data.clima_promedio.toFixed(2)}/10</p>
-                                <p><strong>Nivel de Riesgo Promedio:</strong> ${data.riesgo_promedio.toFixed(2)}</p>
+                                <p><strong>Clima Promedio:</strong> ${(data.clima_promedio || 0).toFixed(2)}/10</p>
+                                <p><strong>Nivel de Riesgo Promedio:</strong> ${(data.riesgo_promedio || 0).toFixed(2)}</p>
                                 <hr style="margin: 20px 0;">
                                 <h3 style="color: #667eea;">Estado del Sistema</h3>
                                 <p><strong>Semanas de Datos:</strong> ${semanas}</p>
