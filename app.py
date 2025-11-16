@@ -647,9 +647,11 @@ def api_ingresar_datos_semanales():
                         # Guardar comentario en la tabla de comentarios
                         query_comentario = text("""
                             INSERT INTO comentarios (
-                                estudiante_id, fecha, comentario, tipo, autor
+                                estudiante_id, fecha_comentario, comentario_texto, 
+                                tipo_comentario, periodo, tono_percibido
                             ) VALUES (
-                                :estudiante_id, :fecha, :comentario, :tipo, 'Docente'
+                                :estudiante_id, :fecha, :comentario, 
+                                :tipo, :periodo, :tono
                             )
                         """)
                         
@@ -657,7 +659,9 @@ def api_ingresar_datos_semanales():
                             'estudiante_id': estudiante_id,
                             'fecha': data['fecha'],
                             'comentario': comentario,
-                            'tipo': tipo_obs if tipo_obs else 'general'
+                            'tipo': tipo_obs if tipo_obs else 'general',
+                            'periodo': data.get('periodo', 'S1'),
+                            'tono': 'Docente'
                         })
                         
                         observaciones_guardadas += 1
@@ -730,12 +734,12 @@ def api_observaciones_estudiantes():
             query = text("""
                 SELECT 
                     estudiante_id,
-                    fecha,
-                    comentario,
-                    tipo,
-                    autor
+                    fecha_comentario,
+                    comentario_texto,
+                    tipo_comentario,
+                    tono_percibido
                 FROM comentarios
-                ORDER BY fecha DESC
+                ORDER BY fecha_comentario DESC
             """)
             
             resultados = session.execute(query).fetchall()
@@ -747,7 +751,7 @@ def api_observaciones_estudiantes():
                     'fecha': row[1],
                     'comentario': row[2],
                     'tipo': row[3] if row[3] else 'general',
-                    'autor': row[4] if row[4] else 'Sistema'
+                    'autor': row[4] if row[4] else 'Docente'
                 })
             
             # Calcular estadísticas
