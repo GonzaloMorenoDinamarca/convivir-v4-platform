@@ -507,10 +507,17 @@
                 const data = await response.json();
                 
                 if (data.exito) {
-                    const polaridad = (data.polaridad_promedio || 0).toFixed(2);
-                    alert(`Análisis completado:\n\nSentimiento general: ${data.sentimiento_general}\nPolaridad promedio: ${polaridad}\nComentarios analizados: ${data.total_comentarios}`);
+                    const reporte = data.reporte_general || {};
+                    const sentimiento = reporte.sentimiento_general || 'No determinado';
+                    const polaridad = (reporte.polaridad_promedio || 0).toFixed(2);
+                    const total = reporte.total_comentarios || 0;
+                    const positivos = reporte.total_positivos || 0;
+                    const negativos = reporte.total_negativos || 0;
+                    const riesgo = data.total_estudiantes_riesgo || 0;
+                    
+                    alert(`✅ Análisis completado:\n\nSentimiento general: ${sentimiento}\nPolaridad promedio: ${polaridad}\nComentarios analizados: ${total}\n  • Positivos: ${positivos}\n  • Negativos: ${negativos}\n\n⚠️ Estudiantes en riesgo: ${riesgo}`);
                 } else {
-                    alert(`Error: ${data.mensaje}`);
+                    alert(`⚠️ ${data.mensaje}`);
                 }
             } catch (error) {
                 alert(`Error: ${error.message}`);
