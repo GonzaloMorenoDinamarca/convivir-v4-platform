@@ -289,7 +289,12 @@
             
             <!-- Tabla de estudiantes -->
             <div class="section">
-                <h2>📋 Lista de Estudiantes</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">📋 Lista de Estudiantes</h2>
+                    <button onclick="eliminarTodosLosEstudiantes()" class="btn-delete-all" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <span>🗑️</span> Eliminar Todos los Estudiantes
+                    </button>
+                </div>
                 <div id="tabla-container">
                     <div class="empty-state">
                         <div class="empty-state-icon">👤</div>
@@ -538,6 +543,41 @@
             const modal = document.getElementById('modal-editar');
             if (event.target === modal) {
                 cerrarModal();
+            }
+        }
+        
+        async function eliminarTodosLosEstudiantes() {
+            const confirmacion = confirm('⚠️ ¿Estás ABSOLUTAMENTE SEGURO de eliminar TODOS los estudiantes?\n\nEsta acción:\n- Eliminará TODOS los estudiantes\n- Eliminará TODOS los datos relacionados (comentarios, interacciones, alertas)\n- NO se puede deshacer\n\nEscribe "ELIMINAR TODO" para confirmar.');
+            
+            if (!confirmacion) {
+                return;
+            }
+            
+            const confirmacionFinal = prompt('Por favor, escribe "ELIMINAR TODO" para confirmar (en mayúsculas):');
+            
+            if (confirmacionFinal !== 'ELIMINAR TODO') {
+                alert('❌ Operación cancelada. No se escribió la confirmación correcta.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/eliminar_todos_estudiantes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.exito) {
+                    alert(`✅ ${data.mensaje}\n\nEstudiantes eliminados: ${data.estudiantes_eliminados}`);
+                    cargarEstudiantes(); // Recargar la tabla
+                } else {
+                    alert('❌ Error: ' + data.mensaje);
+                }
+            } catch (error) {
+                alert('❌ Error al eliminar estudiantes: ' + error.message);
             }
         }
     </script>

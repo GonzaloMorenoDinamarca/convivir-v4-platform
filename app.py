@@ -1028,6 +1028,50 @@ def api_eliminar_estudiante():
         return jsonify({'exito': False, 'mensaje': f'Error al eliminar estudiante: {str(e)}'})
 
 
+@app.route('/api/eliminar_todos_estudiantes', methods=['POST'])
+def api_eliminar_todos_estudiantes():
+    """Elimina TODOS los estudiantes y sus datos relacionados"""
+    try:
+        with db.get_session() as session:
+            # Contar estudiantes antes de eliminar
+            query_count = text("SELECT COUNT(*) as total FROM estudiantes")
+            result_count = session.execute(query_count)
+            total_estudiantes = result_count.fetchone()[0]
+            
+            if total_estudiantes == 0:
+                return jsonify({
+                    'exito': False,
+                    'mensaje': 'No hay estudiantes para eliminar'
+                })
+            
+            # Eliminar todas las interacciones sociales
+            query_delete_interacciones = text("DELETE FROM interacciones_sociales")
+            session.execute(query_delete_interacciones)
+            
+            # Eliminar todas las alertas
+            query_delete_alertas = text("DELETE FROM alertas")
+            session.execute(query_delete_alertas)
+            
+            # Eliminar todos los comentarios
+            query_delete_comentarios = text("DELETE FROM comentarios")
+            session.execute(query_delete_comentarios)
+            
+            # Eliminar todos los estudiantes
+            query_delete_estudiantes = text("DELETE FROM estudiantes")
+            session.execute(query_delete_estudiantes)
+            
+            session.commit()
+            
+            return jsonify({
+                'exito': True,
+                'mensaje': 'Todos los estudiantes han sido eliminados exitosamente',
+                'estudiantes_eliminados': total_estudiantes
+            })
+            
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error al eliminar todos los estudiantes: {str(e)}'})
+
+
 @app.route('/api/editar_estudiante', methods=['POST'])
 def api_editar_estudiante():
     """Edita la información de un estudiante"""
