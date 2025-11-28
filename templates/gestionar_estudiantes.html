@@ -279,11 +279,7 @@
                     <select id="filtro-curso">
                         <option value="">Todos los cursos</option>
                     </select>
-                    <select id="filtro-genero">
-                        <option value="">Todos los géneros</option>
-                        <option value="M">Masculino</option>
-                        <option value="F">Femenino</option>
-                    </select>
+
                 </div>
             </div>
             
@@ -291,9 +287,14 @@
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="margin: 0;">📋 Lista de Estudiantes</h2>
-                    <button onclick="eliminarTodosLosEstudiantes()" class="btn-delete-all" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <span>🗑️</span> Eliminar Todos los Estudiantes
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="mostrarModalAgregar()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <span>➕</span> Agregar Estudiante
+                        </button>
+                        <button onclick="eliminarTodosLosEstudiantes()" class="btn-delete-all" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <span>🗑️</span> Eliminar Todos los Estudiantes
+                        </button>
+                    </div>
                 </div>
                 <div id="tabla-container">
                     <div class="empty-state">
@@ -308,6 +309,31 @@
                 <button class="btn btn-secondary" onclick="window.location.href='/'">Volver al Dashboard</button>
                 <button class="btn btn-primary" onclick="window.location.href='/configurar_cursos'">Configurar Cursos</button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Modal para agregar estudiante -->
+    <div id="modal-agregar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ Agregar Estudiante</h2>
+            </div>
+            <form id="form-agregar">
+                <div class="form-group">
+                    <label>Nombre del Estudiante: *</label>
+                    <input type="text" id="add-nombre" placeholder="Ej: GONZÁLEZ PÉREZ JUAN PABLO" required>
+                </div>
+                <div class="form-group">
+                    <label>Curso: *</label>
+                    <select id="add-curso" required>
+                        <option value="">Seleccione un curso</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalAgregar()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar Estudiante</button>
+                </div>
+            </form>
         </div>
     </div>
     
@@ -346,7 +372,12 @@
         // Event listeners para filtros
         document.getElementById('buscar').addEventListener('input', filtrarEstudiantes);
         document.getElementById('filtro-curso').addEventListener('change', filtrarEstudiantes);
-        document.getElementById('filtro-genero').addEventListener('change', filtrarEstudiantes);
+        
+        // Form submit para agregar estudiante
+        document.getElementById('form-agregar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await agregarEstudiante();
+        });
         
         // Form submit para editar
         document.getElementById('form-editar').addEventListener('submit', async (e) => {
@@ -377,12 +408,21 @@
                 const data = await response.json();
                 
                 if (data.exito) {
-                    const select = document.getElementById('filtro-curso');
+                    const selectFiltro = document.getElementById('filtro-curso');
+                    const selectAgregar = document.getElementById('add-curso');
+                    
                     data.cursos.forEach(curso => {
-                        const option = document.createElement('option');
-                        option.value = curso;
-                        option.textContent = curso;
-                        select.appendChild(option);
+                        // Para el filtro
+                        const optionFiltro = document.createElement('option');
+                        optionFiltro.value = curso;
+                        optionFiltro.textContent = curso;
+                        selectFiltro.appendChild(optionFiltro);
+                        
+                        // Para el modal de agregar
+                        const optionAgregar = document.createElement('option');
+                        optionAgregar.value = curso;
+                        optionAgregar.textContent = curso;
+                        selectAgregar.appendChild(optionAgregar);
                     });
                     
                     // Contar cursos únicos
@@ -413,8 +453,6 @@
                         <tr>
                             <th>ID / Nombre</th>
                             <th>Curso</th>
-                            <th>Género</th>
-                            <th>Edad</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -426,8 +464,6 @@
                     <tr>
                         <td><strong>${est.estudiante_id}</strong></td>
                         <td>${est.curso_id}</td>
-                        <td>${est.genero === 'M' ? 'Masculino' : 'Femenino'}</td>
-                        <td>${est.edad} años</td>
                         <td>
                             <button class="btn btn-edit" onclick="editarEstudiante('${est.estudiante_id}')">✏️ Editar</button>
                             <button class="btn btn-delete" onclick="eliminarEstudiante('${est.estudiante_id}')">🗑️ Eliminar</button>
@@ -447,14 +483,12 @@
         function filtrarEstudiantes() {
             const busqueda = document.getElementById('buscar').value.toLowerCase();
             const curso = document.getElementById('filtro-curso').value;
-            const genero = document.getElementById('filtro-genero').value;
             
             let filtrados = estudiantesData.filter(est => {
                 const matchBusqueda = est.estudiante_id.toLowerCase().includes(busqueda);
                 const matchCurso = !curso || est.curso_id === curso;
-                const matchGenero = !genero || est.genero === genero;
                 
-                return matchBusqueda && matchCurso && matchGenero;
+                return matchBusqueda && matchCurso;
             });
             
             mostrarEstudiantes(filtrados);
@@ -524,8 +558,61 @@
             }
         }
         
+        async function agregarEstudiante() {
+            const nombre = document.getElementById('add-nombre').value.trim();
+            const curso = document.getElementById('add-curso').value;
+            
+            if (!nombre || !curso) {
+                alert('⚠️ Por favor, completa todos los campos');
+                return;
+            }
+            
+            try {
+                // Generar un RUN único basado en timestamp
+                const timestamp = Date.now();
+                const run = `99.${String(timestamp).slice(-6, -3)}.${String(timestamp).slice(-3)}-${timestamp % 10}`;
+                
+                const response = await fetch('/api/guardar_estudiantes_curso', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        curso_id: curso,
+                        estudiantes: [{
+                            run: run,
+                            nombre_completo: nombre,
+                            edad: 14,
+                            genero: 'M'
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.exito) {
+                    alert('✅ Estudiante agregado exitosamente');
+                    cerrarModalAgregar();
+                    await cargarEstudiantes();
+                } else {
+                    alert('❌ Error: ' + data.mensaje);
+                }
+            } catch (error) {
+                alert('❌ Error al agregar estudiante: ' + error.message);
+            }
+        }
+        
         function cerrarModal() {
             document.getElementById('modal-editar').style.display = 'none';
+        }
+        
+        function mostrarModalAgregar() {
+            document.getElementById('modal-agregar').style.display = 'block';
+        }
+        
+        function cerrarModalAgregar() {
+            document.getElementById('modal-agregar').style.display = 'none';
+            document.getElementById('form-agregar').reset();
         }
         
         function mostrarError(mensaje) {
@@ -540,9 +627,13 @@
         
         // Cerrar modal al hacer clic fuera
         window.onclick = function(event) {
-            const modal = document.getElementById('modal-editar');
-            if (event.target === modal) {
+            const modalEditar = document.getElementById('modal-editar');
+            const modalAgregar = document.getElementById('modal-agregar');
+            if (event.target === modalEditar) {
                 cerrarModal();
+            }
+            if (event.target === modalAgregar) {
+                cerrarModalAgregar();
             }
         }
         
