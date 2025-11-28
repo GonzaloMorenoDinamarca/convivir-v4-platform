@@ -219,6 +219,17 @@
             <span class="version-badge">Datos Precargados - Listo para Usar</span>
         </header>
         
+        <!-- Botones de Funcionalidades Principales -->
+        <div class="action-buttons" style="margin-bottom: 30px;">
+            <button class="btn btn-primary" onclick="window.location.href='/configurar_cursos'" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">⚙️ Configurar Cursos</button>
+            <button class="btn btn-primary" onclick="window.location.href='/gestionar_estudiantes'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">👥 Gestionar Estudiantes</button>
+            <button class="btn btn-primary" onclick="window.location.href='/gestionar_cohortes'" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">🧬 Gestionar Cohortes</button>
+            <button class="btn btn-success" onclick="window.location.href='/ingresar_datos'" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">📝 Ingresar Datos Semanales</button>
+            <button class="btn btn-primary" onclick="window.location.href='/observaciones_estudiantes'" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💬 Ver Observaciones</button>
+            <button class="btn btn-info" onclick="ejecutarAnalisisNLP()" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🔍 Análisis de Sentimientos (NLP)</button>
+            <button class="btn btn-warning" onclick="generarReporte()" style="background: linear-gradient(135deg, #fa8c16 0%, #ffd666 100%);">📄 Generar Reporte Completo</button>
+        </div>
+        
         <!-- Estadísticas Generales -->
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
@@ -302,17 +313,7 @@
             <button class="btn btn-success" onclick="simularIntervencion()">Simular Impacto</button>
             <div id="resultadoSimulacion" style="margin-top: 20px;"></div>
         </div>
-        
-        <!-- Botones de Acción -->
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="window.location.href='/configurar_cursos'" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">⚙️ Configurar Cursos</button>
-            <button class="btn btn-primary" onclick="window.location.href='/gestionar_estudiantes'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">👥 Gestionar Estudiantes</button>
-            <button class="btn btn-primary" onclick="window.location.href='/gestionar_cohortes'" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">🧬 Gestionar Cohortes</button>
-            <button class="btn btn-success" onclick="window.location.href='/ingresar_datos'" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">📝 Ingresar Datos Semanales</button>
-            <button class="btn btn-primary" onclick="window.location.href='/observaciones_estudiantes'" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💬 Ver Observaciones</button>
-            <button class="btn btn-info" onclick="ejecutarAnalisisNLP()">🔍 Análisis de Sentimientos (NLP)</button>
-            <button class="btn btn-warning" onclick="generarReporte()">📄 Generar Reporte Completo</button>
-        </div>
+
     </div>
     
     <script>

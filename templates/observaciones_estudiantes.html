@@ -266,6 +266,44 @@
             background: white;
             color: #667eea;
         }
+        
+        /* Botón Agregar Observación mejorado */
+        .btn-add-observation {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-add-observation:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .btn-add-observation .btn-icon {
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        
+        .btn-add-observation .btn-text {
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -394,8 +432,11 @@
                 lista.innerHTML = `
                     <div class="no-data">
                         <p>📭 No se encontraron observaciones con los filtros aplicados.</p>
-                        <p style="margin-top: 10px;">
-                            <a href="/ingresar_datos" class="btn btn-primary">➕ Agregar Primera Observación</a>
+                        <p style="margin-top: 20px;">
+                            <a href="/ingresar_datos" class="btn-add-observation">
+                                <span class="btn-icon">➕</span>
+                                <span class="btn-text">Agregar Primera Observación</span>
+                            </a>
                         </p>
                     </div>
                 `;
