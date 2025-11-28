@@ -971,6 +971,128 @@ def api_eliminar_curso():
         return jsonify({'exito': False, 'mensaje': f'Error al eliminar curso: {str(e)}'})
 
 
+@app.route('/api/cargar_lista_estudiantes', methods=['POST'])
+def api_cargar_lista_estudiantes():
+    """Procesa un archivo .txt con lista de estudiantes y retorna los datos parseados"""
+    try:
+        from parser_lista_estudiantes import parsear_lista_estudiantes
+        
+        if 'archivo' not in request.files:
+            return jsonify({'exito': False, 'mensaje': 'No se recibió ningún archivo'})
+        
+        archivo = request.files['archivo']
+        
+        if archivo.filename == '':
+            return jsonify({'exito': False, 'mensaje': 'Archivo vacío'})
+        
+        if not archivo.filename.endswith('.txt'):
+            return jsonify({'exito': False, 'mensaje': 'El archivo debe ser .txt'})
+        
+        # Leer contenido del archivo
+        contenido = archivo.read().decode('utf-8', errors='ignore')
+        
+        # Parsear el archivo
+        resultado = parsear_lista_estudiantes(contenido)
+        
+        return jsonify(resultado)
+        
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error al procesar archivo: {str(e)}'})
+
+
+@app.route('/api/guardar_estudiantes_curso', methods=['POST'])
+def api_guardar_estudiantes_curso():
+    """Guarda múltiples estudiantes en la base de datos y los asigna a un curso"""
+    try:
+        data = request.json
+        curso_id = data.get('curso_id')
+        estudiantes = data.get('estudiantes', [])
+        
+        if not curso_id or not estudiantes:
+            return jsonify({'exito': False, 'mensaje': 'Faltan parámetros requeridos'})
+        
+        with db.get_session() as session:
+            # Obtener información del curso para obtener la cohorte
+            query_curso = text("""
+                SELECT c.curso_id, ca.cohorte_id
+                FROM cursos_temporal c
+                LEFT JOIN cursos_anuales ca ON c.curso_id = ca.nombre_curso AND ca.activo = 1
+                WHERE c.curso_id = :curso_id
+            """)
+            curso_info = session.execute(query_curso, {'curso_id': curso_id}).fetchone()
+            
+            if not curso_info:
+                return jsonify({'exito': False, 'mensaje': 'Curso no encontrado'})
+            
+            nombre_curso = curso_info[0]
+            cohorte_id = curso_info[1]
+            
+            # Si no existe cohorte, crear una automáticamente
+            if not cohorte_id:
+                from datetime import datetime
+                ano_actual = datetime.now().year
+                
+                # Crear cohorte
+                query_crear_cohorte = text("""
+                    INSERT INTO cohortes (nombre_cohorte, ano_ingreso)
+                    VALUES (:nombre_cohorte, :ano_ingreso)
+                """)
+                result = session.execute(query_crear_cohorte, {
+                    'nombre_cohorte': f'Cohorte {nombre_curso} ({ano_actual})',
+                    'ano_ingreso': ano_actual
+                })
+                cohorte_id = result.lastrowid
+                
+                # Crear curso anual asociado
+                query_crear_curso_anual = text("""
+                    INSERT INTO cursos_anuales (cohorte_id, ano_academico, nombre_curso, activo)
+                    VALUES (:cohorte_id, :ano_academico, :nombre_curso, 1)
+                """)
+                session.execute(query_crear_curso_anual, {
+                    'cohorte_id': cohorte_id,
+                    'ano_academico': ano_actual,
+                    'nombre_curso': nombre_curso
+                })
+            
+            # Guardar cada estudiante
+            total_guardados = 0
+            for est in estudiantes:
+                # Generar ID de estudiante único
+                estudiante_id = f"EST_{est['run'].replace('.', '').replace('-', '')[:8]}"
+                
+                # Verificar si el estudiante ya existe
+                query_check = text("""
+                    SELECT estudiante_id FROM estudiantes WHERE estudiante_id = :estudiante_id
+                """)
+                existe = session.execute(query_check, {'estudiante_id': estudiante_id}).fetchone()
+                
+                if not existe:
+                    # Insertar estudiante
+                    query_insert = text("""
+                        INSERT INTO estudiantes (estudiante_id, curso_id, edad, genero, cohorte_id)
+                        VALUES (:estudiante_id, :curso_id, :edad, :genero, :cohorte_id)
+                    """)
+                    session.execute(query_insert, {
+                        'estudiante_id': estudiante_id,
+                        'curso_id': nombre_curso,
+                        'edad': est.get('edad', 14),
+                        'genero': est['genero'],
+                        'cohorte_id': cohorte_id
+                    })
+                    total_guardados += 1
+            
+            session.commit()
+            
+            return jsonify({
+                'exito': True,
+                'total_guardados': total_guardados,
+                'mensaje': f'{total_guardados} estudiantes guardados exitosamente'
+            })
+            
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error al guardar estudiantes: {str(e)}'})
+
+
 @app.route('/api/eliminar_estudiante', methods=['POST'])
 def api_eliminar_estudiante():
     """Elimina un estudiante y todos sus datos relacionados"""
