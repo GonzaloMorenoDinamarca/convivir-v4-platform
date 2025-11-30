@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Observaciones - CONVIVIR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .filters {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filters label {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .filters select, .filters input {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .filters select:focus, .filters input:focus {
+            border-color: #667eea;
+        }
+        
+        .observaciones-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .observacion-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .observacion-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .observacion-card.riesgo-alto {
+            border-left: 5px solid #dc3545;
+            background: #fff5f5;
+        }
+        
+        .observacion-card.riesgo-medio {
+            border-left: 5px solid #ffc107;
+            background: #fffbf0;
+        }
+        
+        .observacion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .estudiante-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .estudiante-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .estudiante-details h3 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .estudiante-details p {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .observacion-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .observacion-texto {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #495057;
+            line-height: 1.6;
+        }
+        
+        .observacion-analisis {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .badge-positivo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-negativo {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge-neutral {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-tema {
+            background: #e7f3ff;
+            color: #004085;
+        }
+        
+        .badge-confianza {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .btn-back:hover {
+            background: #5a6268;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #667eea;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #0c5460;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👁️ Ver Observaciones de Estudiantes</h1>
+            <p>Análisis de comentarios con Procesamiento de Lenguaje Natural (NLP)</p>
+        </div>
+        
+        <div class="content">
+            <a href="/" class="btn btn-back">← Volver al Dashboard</a>
+            
+            <div class="alert alert-info">
+                <strong>ℹ️ Información:</strong> Esta página muestra los comentarios y observaciones de estudiantes analizados automáticamente mediante Inteligencia Artificial para identificar situaciones de riesgo.
+            </div>
+            
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <h3 id="total-observaciones">0</h3>
+                    <p>Total Observaciones</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-negativos">0</h3>
+                    <p>Sentimiento Negativo</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-positivos">0</h3>
+                    <p>Sentimiento Positivo</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-riesgo">0</h3>
+                    <p>Estudiantes en Riesgo</p>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <label for="filtro-curso">Curso:</label>
+                <select id="filtro-curso">
+                    <option value="">Todos los cursos</option>
+                </select>
+                
+                <label for="filtro-sentimiento">Sentimiento:</label>
+                <select id="filtro-sentimiento">
+                    <option value="">Todos</option>
+                    <option value="negativo">Negativo</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="positivo">Positivo</option>
+                </select>
+                
+                <label for="filtro-buscar">Buscar:</label>
+                <input type="text" id="filtro-buscar" placeholder="Nombre del estudiante...">
+                
+                <button class="btn btn-primary" onclick="ejecutarAnalisisNLP()">🤖 Ejecutar Análisis NLP</button>
+            </div>
+            
+            <div id="loading" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Cargando observaciones...</p>
+            </div>
+            
+            <div id="observaciones-container" class="observaciones-list"></div>
+            
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <h2>📭 No hay observaciones disponibles</h2>
+                <p>Los comentarios de los estudiantes aparecerán aquí después de importar datos desde Google Forms.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let observacionesData = [];
+        
+        // Cargar observaciones al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarObservaciones();
+            cargarCursos();
+            
+            // Event listeners para filtros
+            document.getElementById('filtro-curso').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtro-sentimiento').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtro-buscar').addEventListener('input', aplicarFiltros);
+        });
+        
+        async function cargarObservaciones() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('observaciones-container').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/observaciones_estudiantes');
+                const data = await response.json();
+                
+                if (data.exito) {
+                    observacionesData = data.observaciones;
+                    actualizarEstadisticas();
+                    mostrarObservaciones(observacionesData);
+                } else {
+                    console.error('Error al cargar observaciones:', data.mensaje);
+                    document.getElementById('empty-state').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('empty-state').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        async function cargarCursos() {
+            try {
+                const response = await fetch('/api/listar_cursos');
+                const data = await response.json();
+                
+                if (data.exito) {
+                    const select = document.getElementById('filtro-curso');
+                    data.cursos.forEach(curso => {
+                        const option = document.createElement('option');
+                        option.value = curso.curso_id;
+                        option.textContent = curso.nombre_curso;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar cursos:', error);
+            }
+        }
+        
+        function actualizarEstadisticas() {
+            const total = observacionesData.length;
+            const negativos = observacionesData.filter(o => o.sentimiento === 'negativo').length;
+            const positivos = observacionesData.filter(o => o.sentimiento === 'positivo').length;
+            
+            // Contar estudiantes con múltiples comentarios negativos
+            const estudiantesNegativos = {};
+            observacionesData.forEach(o => {
+                if (o.sentimiento === 'negativo') {
+                    estudiantesNegativos[o.estudiante_id] = (estudiantesNegativos[o.estudiante_id] || 0) + 1;
+                }
+            });
+            const enRiesgo = Object.values(estudiantesNegativos).filter(count => count >= 2).length;
+            
+            document.getElementById('total-observaciones').textContent = total;
+            document.getElementById('total-negativos').textContent = negativos;
+            document.getElementById('total-positivos').textContent = positivos;
+            document.getElementById('total-riesgo').textContent = enRiesgo;
+        }
+        
+        function mostrarObservaciones(observaciones) {
+            const container = document.getElementById('observaciones-container');
+            
+            if (observaciones.length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'grid';
+            document.getElementById('empty-state').style.display = 'none';
+            
+            // Calcular nivel de riesgo por estudiante
+            const riesgoPorEstudiante = {};
+            observacionesData.forEach(o => {
+                if (o.sentimiento === 'negativo') {
+                    riesgoPorEstudiante[o.estudiante_id] = (riesgoPorEstudiante[o.estudiante_id] || 0) + 1;
+                }
+            });
+            
+            container.innerHTML = observaciones.map(obs => {
+                const iniciales = obs.nombre_completo ? obs.nombre_completo.split(' ').map(n => n[0]).join('').substring(0, 2) : '??';
+                const comentariosNegativos = riesgoPorEstudiante[obs.estudiante_id] || 0;
+                const nivelRiesgo = comentariosNegativos >= 3 ? 'riesgo-alto' : (comentariosNegativos >= 2 ? 'riesgo-medio' : '');
+                
+                const sentimientoClass = obs.sentimiento === 'negativo' ? 'badge-negativo' : 
+                                       (obs.sentimiento === 'positivo' ? 'badge-positivo' : 'badge-neutral');
+                
+                return `
+                    <div class="observacion-card ${nivelRiesgo}">
+                        <div class="observacion-header">
+                            <div class="estudiante-info">
+                                <div class="estudiante-avatar">${iniciales}</div>
+                                <div class="estudiante-details">
+                                    <h3>${obs.nombre_completo || 'Anónimo'}</h3>
+                                    <p>${obs.curso_id || 'Sin curso'} • ${obs.estudiante_id}</p>
+                                </div>
+                            </div>
+                            <div class="observacion-meta">
+                                <div class="meta-item">📅 ${new Date(obs.fecha).toLocaleDateString('es-CL')}</div>
+                                <div class="meta-item">🕐 ${obs.periodo || 'N/A'}</div>
+                                <div class="meta-item">📝 ${obs.tipo || 'Comentario'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="observacion-texto">
+                            "${obs.texto || 'Sin texto'}"
+                        </div>
+                        
+                        <div class="observacion-analisis">
+                            ${obs.sentimiento ? `<span class="badge ${sentimientoClass}">
+                                ${obs.sentimiento === 'negativo' ? '😟' : (obs.sentimiento === 'positivo' ? '😊' : '😐')} 
+                                ${obs.sentimiento.charAt(0).toUpperCase() + obs.sentimiento.slice(1)}
+                            </span>` : ''}
+                            ${obs.tema ? `<span class="badge badge-tema">🏷️ ${obs.tema}</span>` : ''}
+                            ${obs.confianza ? `<span class="badge badge-confianza">📊 Confianza: ${(obs.confianza * 100).toFixed(0)}%</span>` : ''}
+                            ${nivelRiesgo === 'riesgo-alto' ? '<span class="badge badge-negativo">🚨 RIESGO ALTO</span>' : ''}
+                            ${nivelRiesgo === 'riesgo-medio' ? '<span class="badge" style="background: #fff3cd; color: #856404;">⚠️ RIESGO MEDIO</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function aplicarFiltros() {
+            const filtroCurso = document.getElementById('filtro-curso').value;
+            const filtroSentimiento = document.getElementById('filtro-sentimiento').value;
+            const filtroBuscar = document.getElementById('filtro-buscar').value.toLowerCase();
+            
+            const observacionesFiltradas = observacionesData.filter(obs => {
+                const matchCurso = !filtroCurso || obs.curso_id === filtroCurso;
+                const matchSentimiento = !filtroSentimiento || obs.sentimiento === filtroSentimiento;
+                const matchBuscar = !filtroBuscar || (obs.nombre_completo && obs.nombre_completo.toLowerCase().includes(filtroBuscar));
+                
+                return matchCurso && matchSentimiento && matchBuscar;
+            });
+            
+            mostrarObservaciones(observacionesFiltradas);
+        }
+        
+        async function ejecutarAnalisisNLP() {
+            if (!confirm('¿Desea ejecutar el análisis NLP sobre todos los comentarios? Esto puede tomar algunos minutos.')) {
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/analisis_sentimientos');
+                const data = await response.json();
+                
+                if (data.exito) {
+                    alert('✅ Análisis NLP completado exitosamente. Se han identificado ' + 
+                          data.total_estudiantes_riesgo + ' estudiantes en riesgo.');
+                    cargarObservaciones(); // Recargar para mostrar resultados actualizados
+                } else {
+                    alert('❌ Error al ejecutar análisis NLP: ' + data.mensaje);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al ejecutar análisis NLP');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

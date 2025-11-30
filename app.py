@@ -231,6 +231,130 @@ def analisis_red_social():
         return jsonify({'exito': False, 'mensaje': str(e)})
 
 
+@app.route('/api/observaciones_estudiantes')
+def obtener_observaciones_estudiantes():
+    """Obtiene todas las observaciones (comentarios) de estudiantes con análisis NLP"""
+    try:
+        with db.engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT 
+                    c.id,
+                    c.estudiante_id,
+                    c.estudiante_id as nombre_completo,
+                    e.curso_id,
+                    c.fecha_comentario,
+                    c.periodo,
+                    c.tipo_comentario,
+                    c.comentario_texto,
+                    c.tema_principal,
+                    c.sentimiento_analizado,
+                    c.confianza_sentimiento
+                FROM comentarios c
+                LEFT JOIN estudiantes e ON c.estudiante_id = e.estudiante_id
+                ORDER BY c.fecha_comentario DESC
+            """))
+            
+            observaciones = []
+            for row in result:
+                observaciones.append({
+                    'id': row[0],
+                    'estudiante_id': row[1],
+                    'nombre_completo': row[2],
+                    'curso_id': row[3],
+                    'fecha': str(row[4]),
+                    'periodo': row[5],
+                    'tipo': row[6],
+                    'texto': row[7],
+                    'tema': row[8],
+                    'sentimiento': row[9],
+                    'confianza': float(row[10]) if row[10] else 0.0
+                })
+            
+            return jsonify({
+                'exito': True,
+                'observaciones': observaciones,
+                'total': len(observaciones)
+            })
+    
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
+@app.route('/api/observaciones_estudiante/<estudiante_id>')
+def obtener_observaciones_estudiante(estudiante_id):
+    """Obtiene las observaciones de un estudiante específico"""
+    try:
+        with db.engine.connect() as conn:
+            # Obtener datos del estudiante
+            result_est = conn.execute(text("""
+                SELECT estudiante_id, estudiante_id as nombre_completo, curso_id
+                FROM estudiantes
+                WHERE estudiante_id = :estudiante_id
+            """), {'estudiante_id': estudiante_id})
+            
+            estudiante_data = result_est.fetchone()
+            if not estudiante_data:
+                return jsonify({
+                    'exito': False,
+                    'mensaje': 'Estudiante no encontrado'
+                })
+            
+            # Obtener comentarios del estudiante
+            result = conn.execute(text("""
+                SELECT 
+                    id,
+                    fecha_comentario,
+                    periodo,
+                    tipo_comentario,
+                    comentario_texto,
+                    tema_principal,
+                    sentimiento_analizado,
+                    confianza_sentimiento
+                FROM comentarios
+                WHERE estudiante_id = :estudiante_id
+                ORDER BY fecha_comentario DESC
+            """), {'estudiante_id': estudiante_id})
+            
+            comentarios = []
+            for row in result:
+                comentarios.append({
+                    'id': row[0],
+                    'fecha': str(row[1]),
+                    'periodo': row[2],
+                    'tipo': row[3],
+                    'texto': row[4],
+                    'tema': row[5],
+                    'sentimiento': row[6],
+                    'confianza': float(row[7]) if row[7] else 0.0
+                })
+            
+            # Calcular estadísticas
+            sentimientos = [c['sentimiento'] for c in comentarios if c['sentimiento']]
+            negativos = sentimientos.count('negativo')
+            positivos = sentimientos.count('positivo')
+            neutrales = sentimientos.count('neutral')
+            
+            return jsonify({
+                'exito': True,
+                'estudiante': {
+                    'id': estudiante_data[0],
+                    'nombre': estudiante_data[1],
+                    'curso': estudiante_data[2]
+                },
+                'comentarios': comentarios,
+                'estadisticas': {
+                    'total': len(comentarios),
+                    'negativos': negativos,
+                    'positivos': positivos,
+                    'neutrales': neutrales,
+                    'nivel_riesgo': 'alto' if negativos >= 3 else ('medio' if negativos >= 2 else 'bajo')
+                }
+            })
+    
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': str(e)})
+
+
 @app.route('/api/alertas')
 def obtener_alertas():
     """Obtiene alertas pendientes"""
@@ -826,6 +950,12 @@ def configurar_cursos():
 def gestionar_estudiantes():
     """Página para gestionar estudiantes"""
     return render_template('gestionar_estudiantes.html')
+
+
+@app.route('/ver_observaciones')
+def ver_observaciones():
+    """Página para ver observaciones de estudiantes con análisis NLP"""
+    return render_template('ver_observaciones.html')
 
 
 @app.route('/gestionar_cohortes')
