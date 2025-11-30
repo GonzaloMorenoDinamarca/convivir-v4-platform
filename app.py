@@ -897,7 +897,8 @@ def api_agregar_curso():
                     'mensaje': f'El curso "{nombre_curso}" ya existe'
                 })
             
-            # Crear registro inicial del curso
+            # Crear registro inicial del curso con valores en 0.0
+            # Los valores reales se actualizarán cuando el usuario ingrese datos semanales
             query_insert = text("""
                 INSERT INTO cursos_temporal (
                     establecimiento_id, fecha_registro, periodo, curso_id,
@@ -908,8 +909,8 @@ def api_agregar_curso():
                     reportes_anonimos, asistencia_promedio_porcentaje, promedio_notas
                 ) VALUES (
                     'EST_001', :fecha, 'Configuración Inicial', :curso_id,
-                    :total_estudiantes, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
-                    0, 0, 0, 0, 85.0, 5.0
+                    :total_estudiantes, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0, 0, 0, 0, 0.0, 0.0
                 )
             """)
             
